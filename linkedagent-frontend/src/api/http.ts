@@ -1,5 +1,6 @@
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import { BaseResponse } from './types';
+import axios from 'axios';
+import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import type { BaseResponse } from './types';
 
 const http: AxiosInstance = axios.create({
   timeout: 10000, // 10秒超时
