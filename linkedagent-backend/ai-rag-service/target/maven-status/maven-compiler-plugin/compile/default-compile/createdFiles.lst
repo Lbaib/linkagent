@@ -1,0 +1,5 @@
+com\linkedagent\airagservice\controller\AiController.class
+com\linkedagent\airagservice\entity\DocumentChunk.class
+com\linkedagent\airagservice\controller\DocumentController.class
+com\linkedagent\airagservice\service\AiRagService.class
+com\linkedagent\airagservice\AiRagServiceApplication.class

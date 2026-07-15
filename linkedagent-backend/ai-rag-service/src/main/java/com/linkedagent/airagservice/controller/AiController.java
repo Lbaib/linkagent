@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/ai")
-@CrossOrigin(origins = "*") // Ensure frontend can call this
 public class AiController {
 
     @Autowired
