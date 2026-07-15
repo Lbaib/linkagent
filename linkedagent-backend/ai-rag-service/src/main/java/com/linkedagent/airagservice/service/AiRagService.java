@@ -8,10 +8,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import com.linkedagent.airagservice.repository.DocumentChunkRepository;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 public class AiRagService {
@@ -19,11 +22,27 @@ public class AiRagService {
     @Autowired
     private StringRedisTemplate redisTemplate;
     
+    @Autowired
+    private EmbeddingService embeddingService;
+    
+    @Autowired
+    private DocumentChunkRepository documentChunkRepository;
+    
     private final String API_URL = "https://yundu.lat/v1/chat/completions";
     private final String API_KEY = "sk-c93d2942533f4a3122e99c2c736e6b231b7e123d3b027c5fffab0c5362046f82";
 
     public String generateResponseSync(String sessionId, String query) {
         try {
+            List<Double> embedding = embeddingService.getEmbedding(query);
+            String vectorStr = "[" + embedding.stream().map(String::valueOf).collect(Collectors.joining(",")) + "]";
+            
+            List<String> similarChunks = documentChunkRepository.findTop3Similar(vectorStr);
+            String augmentedQuery = query;
+            if (similarChunks != null && !similarChunks.isEmpty()) {
+                String context = String.join("\n\n", similarChunks);
+                augmentedQuery = "Background context:\n" + context + "\n\nUser Question:\n" + query;
+            }
+
             RestTemplate restTemplate = new RestTemplate();
             
             HttpHeaders headers = new HttpHeaders();
@@ -36,7 +55,7 @@ public class AiRagService {
             List<Map<String, String>> messages = new ArrayList<>();
             Map<String, String> userMessage = new HashMap<>();
             userMessage.put("role", "user");
-            userMessage.put("content", query);
+            userMessage.put("content", augmentedQuery);
             messages.add(userMessage);
             
             body.put("messages", messages);
