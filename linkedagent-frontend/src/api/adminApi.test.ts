@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { uploadDocument } from './adminApi';
 import * as adminApi from './adminApi';
 
@@ -6,6 +6,10 @@ import * as adminApi from './adminApi';
 global.fetch = vi.fn();
 
 describe('adminApi', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should upload a document successfully', async () => {
     // Arrange
     const mockFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
