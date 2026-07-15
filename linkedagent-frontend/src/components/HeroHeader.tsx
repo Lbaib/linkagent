@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
     { name: 'Features', href: '#' },
@@ -8,13 +9,8 @@ const menuItems = [
     { name: 'About', href: '#' },
 ];
 
-interface HeroHeaderProps {
-  onLoginClick: () => void;
-  onAdminClick: () => void;
-  onHomeClick: () => void;
-}
-
-export const HeroHeader: React.FC<HeroHeaderProps> = ({ onLoginClick, onAdminClick, onHomeClick }) => {
+export const HeroHeader: React.FC = () => {
+    const navigate = useNavigate();
     const [menuState, setMenuState] = useState(false);
     return (
         <header>
@@ -22,7 +18,7 @@ export const HeroHeader: React.FC<HeroHeaderProps> = ({ onLoginClick, onAdminCli
                 <div className="mx-auto max-w-[1400px] px-8 transition-all duration-300">
                     <div className="relative flex flex-wrap items-center justify-between gap-6 py-4 lg:gap-0">
                         <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
-                            <div className="flex items-center gap-2 cursor-pointer" onClick={onHomeClick}>
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>
                                 <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center shadow-sm">
                                   <Sparkles className="w-5 h-5 text-white" />
                                 </div>
@@ -64,12 +60,12 @@ export const HeroHeader: React.FC<HeroHeaderProps> = ({ onLoginClick, onAdminCli
                             </div>
                             <div className="flex flex-col sm:flex-row gap-3 pt-4 lg:pt-0 border-t border-gray-100 lg:border-none">
                                 <button
-                                    onClick={onLoginClick}
+                                    onClick={() => navigate('/agent')}
                                     className="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 font-bold text-sm transition-all cursor-pointer">
                                     客服工作台
                                 </button>
                                 <button
-                                    onClick={onAdminClick}
+                                    onClick={() => navigate('/admin')}
                                     className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition-all shadow-sm cursor-pointer">
                                     管理中心
                                 </button>

@@ -1,26 +1,30 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Lock, User, Loader2, ArrowRight } from 'lucide-react';
 
 interface LoginPageProps {
-  onSuccess?: () => void;
   title?: string;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ 
-  onSuccess, 
-  title = "LinkedAgent 管理系统" 
+export const LoginPage: React.FC<LoginPageProps> = ({
+  title = 'LinkedAgent 管理系统',
 }) => {
   const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Redirect back to where the user originally wanted to go, default to /home
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/home';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!username || !password) {
       setError('请输入用户名和密码');
       return;
@@ -29,15 +33,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setIsSubmitting(true);
     try {
       await login({ username, password });
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (err: any) {
-      setError(err.message || '登录失败，请检查账号或密码');
+      navigate(from, { replace: true });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '登录失败，请检查账号或密码';
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-slate-900">
