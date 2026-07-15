@@ -27,7 +27,12 @@ export async function uploadDocument(file: File): Promise<any> {
   return response.json();
 }
 
-export async function fetchDocuments(): Promise<any[]> {
+export interface DocumentStat {
+  documentName: string;
+  chunkCount: number;
+}
+
+export async function fetchDocuments(): Promise<DocumentStat[]> {
   const response = await fetch('/api/ai/doc/list');
   if (!response.ok) {
     await handleApiError(response, 'Fetch failed');

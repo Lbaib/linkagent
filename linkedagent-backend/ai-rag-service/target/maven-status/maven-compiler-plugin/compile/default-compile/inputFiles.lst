@@ -1,4 +1,5 @@
 E:\SDD+Harness\LinkAgent\linkedagent-backend\ai-rag-service\src\main\java\com\linkedagent\airagservice\controller\AiController.java
+E:\SDD+Harness\LinkAgent\linkedagent-backend\ai-rag-service\src\main\java\com\linkedagent\airagservice\dto\DocumentStat.java
 E:\SDD+Harness\LinkAgent\linkedagent-backend\ai-rag-service\src\main\java\com\linkedagent\airagservice\repository\DocumentChunkRepository.java
 E:\SDD+Harness\LinkAgent\linkedagent-backend\ai-rag-service\src\main\java\com\linkedagent\airagservice\service\AiRagService.java
 E:\SDD+Harness\LinkAgent\linkedagent-backend\ai-rag-service\src\main\java\com\linkedagent\airagservice\service\EmbeddingService.java

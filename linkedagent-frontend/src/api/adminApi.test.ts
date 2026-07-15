@@ -44,7 +44,6 @@ describe('adminApi', () => {
       json: async () => mockResponse,
     });
     
-    // @ts-ignore
     const result = await adminApi.fetchDocuments();
     expect(global.fetch).toHaveBeenCalledWith('/api/ai/doc/list');
     expect(result).toEqual(mockResponse);
@@ -56,7 +55,6 @@ describe('adminApi', () => {
       json: async () => ({ success: true }),
     });
     
-    // @ts-ignore
     const result = await adminApi.deleteDocument('test.pdf');
     expect(global.fetch).toHaveBeenCalledWith('/api/ai/doc?name=test.pdf', { method: 'DELETE' });
     expect(result).toEqual({ success: true });

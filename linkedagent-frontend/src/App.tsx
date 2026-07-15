@@ -4,7 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { LoginPage } from './components/LoginPage';
 import { RequireAuth } from './components/RequireAuth';
 import { AgentWorkbench } from './components/AgentWorkbench';
-import { AdminConsole } from './components/AdminConsole';
+import AdminConsole from './pages/AdminConsole/AdminConsole';
 import { TopNav } from './components/TopNav'; // Ignore missing import error for now, we'll build it in Task 2
 import { VisitorClient } from './components/VisitorClient';
 import { useState } from 'react';

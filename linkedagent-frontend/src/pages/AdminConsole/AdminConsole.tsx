@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import FileUpload from '../../components/ui/FileUpload';
-import { uploadDocument, fetchDocuments, deleteDocument } from '../../api/adminApi';
+import { uploadDocument, fetchDocuments, deleteDocument, DocumentStat } from '../../api/adminApi';
 import { Layers, CheckCircle, AlertCircle, Loader2, Trash2, FileText } from 'lucide-react';
-
-interface Document {
-  documentName: string;
-  chunkCount: number;
-}
 
 export default function AdminConsole() {
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<DocumentStat[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
 
   const loadDocuments = async () => {
@@ -33,12 +28,14 @@ export default function AdminConsole() {
   }, []);
 
   const handleDelete = async (documentName: string) => {
-    try {
-      await deleteDocument(documentName);
-      loadDocuments();
-    } catch (error: any) {
-      console.error('Failed to delete document', error);
-      setErrorMessage(error.message || 'Failed to delete document');
+    if (window.confirm('Are you sure you want to delete this document and all its vectorized knowledge?')) {
+      try {
+        await deleteDocument(documentName);
+        loadDocuments();
+      } catch (error: any) {
+        console.error('Failed to delete document', error);
+        setErrorMessage(error.message || 'Failed to delete document');
+      }
     }
   };
 
@@ -129,8 +126,8 @@ export default function AdminConsole() {
                 ) : documents.length === 0 ? (
                   <div className="text-center py-10 text-slate-400">No documents uploaded yet.</div>
                 ) : (
-                  documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors group">
+                  documents.map((doc) => (
+                    <div key={doc.documentName} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors group">
                       <div className="flex items-center gap-3 overflow-hidden">
                         <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg shrink-0">
                           <FileText size={20} />

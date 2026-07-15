@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import com.linkedagent.airagservice.dto.DocumentStat;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +18,7 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     List<String> findTop3Similar(@Param("vector") String vector);
 
     @Query("SELECT d.documentName as documentName, COUNT(d) as chunkCount FROM DocumentChunk d GROUP BY d.documentName")
-    List<Map<String, Object>> getDocumentStats();
+    List<DocumentStat> getDocumentStats();
 
     @Transactional
     @Modifying

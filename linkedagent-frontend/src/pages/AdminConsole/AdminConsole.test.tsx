@@ -1,12 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AdminConsole from './AdminConsole';
 import * as adminApi from '../../api/adminApi';
 
 vi.mock('../../api/adminApi');
 
 describe('AdminConsole', () => {
+  beforeEach(() => {
+    vi.stubGlobal('confirm', vi.fn(() => true));
+  });
+
   it('should upload document and show success message', async () => {
     // Arrange
     const mockUpload = vi.spyOn(adminApi, 'uploadDocument').mockResolvedValue({
