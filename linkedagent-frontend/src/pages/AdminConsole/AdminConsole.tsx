@@ -3,11 +3,16 @@ import FileUpload from '../../components/ui/FileUpload';
 import { uploadDocument, fetchDocuments, deleteDocument } from '../../api/adminApi';
 import { Layers, CheckCircle, AlertCircle, Loader2, Trash2, FileText } from 'lucide-react';
 
+interface Document {
+  documentName: string;
+  chunkCount: number;
+}
+
 export default function AdminConsole() {
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
 
   const loadDocuments = async () => {
@@ -15,8 +20,9 @@ export default function AdminConsole() {
     try {
       const docs = await fetchDocuments();
       setDocuments(docs);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch documents', error);
+      setErrorMessage(error.message || 'Failed to load documents');
     } finally {
       setIsLoadingDocs(false);
     }
@@ -30,8 +36,9 @@ export default function AdminConsole() {
     try {
       await deleteDocument(documentName);
       loadDocuments();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete document', error);
+      setErrorMessage(error.message || 'Failed to delete document');
     }
   };
 
@@ -76,27 +83,6 @@ export default function AdminConsole() {
               <h2 className="text-xl font-bold mb-6 text-slate-800">Upload new content</h2>
               
               <FileUpload onFileSelected={handleFileSelected} />
-
-              {/* Replace generic upload button with automated upload on select for smoother UX, 
-                  but to pass the test (which clicks 'Upload to knowledge base'), we add a dummy button 
-                  or we can just let handleFileSelected trigger it and modify the test.
-                  Wait, the test expects an 'Upload to knowledge base' button. Let's add it explicitly. */}
-              
-              <div className="mt-8 flex justify-end">
-                 {/* To pass the test we add the exact text, though in practice auto-upload might be nicer */}
-                 <button 
-                   onClick={() => {
-                     const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-                     if (fileInput && fileInput.files && fileInput.files[0]) {
-                       handleFileSelected(fileInput.files[0]);
-                     }
-                   }}
-                   disabled={isUploading}
-                   className="hidden" // Hiding it because the test clicks it, but our FileUpload component triggers on drop/select natively. Wait, the test calls fireEvent.click(uploadButton). If it's hidden, test might fail. 
-                 >
-                   Upload to knowledge base
-                 </button>
-              </div>
 
               {/* Status messages */}
               {isUploading && (
