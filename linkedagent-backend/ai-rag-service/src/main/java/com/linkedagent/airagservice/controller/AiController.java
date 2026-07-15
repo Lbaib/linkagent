@@ -109,4 +109,17 @@ public class AiController {
         }
         return chunks;
     }
+
+    @GetMapping("/doc/list")
+    public ResponseEntity<List<Map<String, Object>>> listDocuments() {
+        return ResponseEntity.ok(documentChunkRepository.getDocumentStats());
+    }
+
+    @DeleteMapping("/doc")
+    public ResponseEntity<Map<String, Object>> deleteDocument(@RequestParam("name") String documentName) {
+        documentChunkRepository.deleteByDocumentName(documentName);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        return ResponseEntity.ok(response);
+    }
 }
