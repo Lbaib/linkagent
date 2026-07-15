@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-
+import { askAiAssistant } from '../services/api';
 export interface Message {
   id: string;
   sender: 'visitor' | 'ai' | 'agent' | 'system';
@@ -159,28 +159,7 @@ export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   // RAG QA Matcher
-  const queryKnowledgeBase = (query: string): { segment: KnowledgeSegment | null; confidence: number } => {
-    const queryLower = query.toLowerCase();
-    let bestMatch: KnowledgeSegment | null = null;
-    let maxMatchCount = 0;
 
-    knowledgeBase.forEach(k => {
-      const matchWords = k.content.toLowerCase().split(/[ ,，。、？?]/);
-      let matches = 0;
-      matchWords.forEach(word => {
-        if (word && queryLower.includes(word)) {
-          matches++;
-        }
-      });
-      if (matches > maxMatchCount) {
-        maxMatchCount = matches;
-        bestMatch = k;
-      }
-    });
-
-    const confidence = bestMatch ? Math.min(0.95, 0.3 + (maxMatchCount / 10)) : 0.2;
-    return { segment: bestMatch, confidence };
-  };
 
   // Synchronize current visitor session to agent's list if active/queued
   useEffect(() => {
@@ -331,36 +310,9 @@ export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   // Streaming AI (RAG + Prompt adapted from CSV specs)
-  const streamAIResponse = (visitorQuery: string) => {
+  const streamAIResponse = async (visitorQuery: string) => {
     if (aiStreamingRef.current) return;
     aiStreamingRef.current = true;
-
-    const { segment, confidence } = queryKnowledgeBase(visitorQuery);
-    
-    // Check confidence threshold for auto-fallback
-    if (confidence < agentConfig.aiConfidenceThreshold) {
-      aiStreamingRef.current = false;
-      setCurrentSession(prev => ({
-        ...prev,
-        messages: [
-          ...prev.messages,
-          {
-            id: `ai-fallback-${Date.now()}`,
-            sender: 'ai',
-            text: '💡 我对您的问题置信度较低（低于设定的阈值 ' + agentConfig.aiConfidenceThreshold + '），为了保障解答质量，系统自动为您推荐人工服务。',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]
-      }));
-      // Auto transfer
-      setTimeout(() => triggerTransferToAgent(), 1000);
-      return;
-    }
-
-    // Set streaming state
-    const responseTemplate = segment 
-      ? `💡 [知识库召回匹配度: ${(confidence * 100).toFixed(0)}%]\n基于 RAG 检索到的内容：${segment.content}\n\n[AI 总结推理]：LinkedAgent 基于这一高维向量召回机制，能够快速定位问题。请问这解决了您的疑惑吗？`
-      : '🤔 我检索了知识库，未发现完全匹配的内容。LinkedAgent 的大模型适配层支持流式返回，您也可以点击下方的按钮直接转接人工坐席沟通。';
 
     const streamingMsgId = `ai-stream-${Date.now()}`;
     
@@ -371,33 +323,47 @@ export const SimulationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         {
           id: streamingMsgId,
           sender: 'ai',
-          text: '',
+          text: '🤔 AI 思考中...',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isStreaming: true
         }
       ]
     }));
 
-    let currentLength = 0;
-    const interval = setInterval(() => {
-      currentLength += Math.floor(Math.random() * 4) + 2;
-      const done = currentLength >= responseTemplate.length;
-      const textSlice = done ? responseTemplate : responseTemplate.slice(0, currentLength);
+    try {
+      const responseTemplate = await askAiAssistant(visitorQuery);
+      
+      let currentLength = 0;
+      const interval = setInterval(() => {
+        currentLength += Math.floor(Math.random() * 4) + 2;
+        const done = currentLength >= responseTemplate.length;
+        const textSlice = done ? responseTemplate : responseTemplate.slice(0, currentLength);
 
+        setCurrentSession(prev => ({
+          ...prev,
+          messages: prev.messages.map(m => 
+            m.id === streamingMsgId 
+              ? { ...m, text: textSlice, isStreaming: !done }
+              : m
+          )
+        }));
+
+        if (done) {
+          clearInterval(interval);
+          aiStreamingRef.current = false;
+        }
+      }, 30);
+    } catch (error) {
       setCurrentSession(prev => ({
         ...prev,
         messages: prev.messages.map(m => 
           m.id === streamingMsgId 
-            ? { ...m, text: textSlice, isStreaming: !done }
+            ? { ...m, text: '⚠️ 抱歉，AI 服务请求失败，请确保后端已启动并配置了有效的 API。', isStreaming: false }
             : m
         )
       }));
-
-      if (done) {
-        clearInterval(interval);
-        aiStreamingRef.current = false;
-      }
-    }, 40);
+      aiStreamingRef.current = false;
+    }
   };
 
   const submitFeedback = (rating: number, feedback: string) => {
