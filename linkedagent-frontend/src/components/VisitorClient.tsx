@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useSimulation } from '../context/SimulationContext';
+import { useChatStore } from '../store/chatStore';
 import { Send, User, Cpu, Headphones, RefreshCw, Star, AlertTriangle, Wifi, WifiOff, X, MessageCircle } from 'lucide-react';
 
 interface VisitorClientProps {
@@ -8,7 +8,7 @@ interface VisitorClientProps {
 }
 
 export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose }) => {
-  const { currentSession, setVisitorStatus, sendVisitorMessage, submitFeedback, submitOfflineLeave, triggerTransferToAgent, resetVisitorSession, wsStatus } = useSimulation();
+  const { wsStatus, sessionStatus, messages, connect, disconnect, sendMessage, requestTransfer } = useChatStore();
 
   const [input, setInput] = useState('');
   const [offlineName, setOfflineName] = useState('');
@@ -21,25 +21,33 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (isOpen && wsStatus === 'disconnected') {
+      connect();
+    }
+  }, [isOpen, wsStatus, connect]);
+
+  useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentSession.messages, isOpen]);
+  }, [messages, isOpen]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    sendVisitorMessage(input);
+    sendMessage(input);
     setInput('');
   };
 
   const handleLeaveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!offlineName || !offlineEmail || !offlineMessage) return;
-    submitOfflineLeave(offlineName, offlineEmail, offlineMessage);
+    // Mock leave submit for now
+    alert('留言已提交：' + offlineMessage);
   };
 
   const handleFeedbackSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    submitFeedback(rating, feedbackText);
+    // Mock feedback for now
+    alert('反馈已提交：' + feedbackText);
   };
 
   if (!isOpen) return null;
@@ -72,9 +80,9 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
         </div>
         <div className="flex items-center gap-2">
             <button 
-                onClick={resetVisitorSession}
+                onClick={connect}
                 className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors cursor-pointer"
-                title="重启对话"
+                title="重新连接"
             >
                 <RefreshCw className="w-5 h-5" />
             </button>
@@ -90,7 +98,7 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-gray-50/50">
-        {currentSession.messages.length === 0 && (
+        {messages.length === 0 && (
              <div className="text-center py-10">
                  <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                      <MessageCircle className="w-8 h-8" />
@@ -99,7 +107,7 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
                  <p className="text-sm text-gray-500 mt-2 px-4">您可以咨询产品功能、售后政策，或者直接呼叫人工服务。</p>
              </div>
         )}
-        {currentSession.messages.map((msg) => {
+        {messages.map((msg) => {
           const isVisitor = msg.sender === 'visitor';
           const isSystem = msg.sender === 'system';
           
@@ -141,14 +149,14 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
       </div>
 
       {/* Input Area */}
-      {currentSession.status === 'ai_chat' && (
+      {sessionStatus === 'ai_chat' && (
         <div className="p-4 bg-white border-t border-gray-100">
           <div className="flex items-center justify-between mb-3 px-1">
              <span className="text-gray-500 flex items-center gap-1.5 text-xs font-medium">
               <Cpu className="w-3.5 h-3.5 text-purple-600" /> AI 助手
             </span>
             <button
-              onClick={triggerTransferToAgent}
+              onClick={requestTransfer}
               className="text-purple-600 hover:text-purple-700 font-medium text-xs flex items-center gap-1 transition-colors cursor-pointer"
             >
               <Headphones className="w-3.5 h-3.5" />转人工
@@ -174,7 +182,7 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
         </div>
       )}
 
-      {currentSession.status === 'queuing' && (
+      {sessionStatus === 'queuing' && (
         <div className="p-6 bg-white border-t border-gray-100 flex flex-col items-center text-center space-y-4">
           <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
             <Headphones className="w-6 h-6 text-purple-600 animate-pulse" />
@@ -182,14 +190,13 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
           <div>
             <h4 className="text-lg font-bold text-gray-900">排队中</h4>
             <p className="text-sm text-gray-500 mt-1">
-              您前面还有 <span className="text-purple-600 font-bold px-1">{currentSession.queuePosition}</span> 位访客
+              正在为您转接人工客服，请稍候...
             </p>
           </div>
-          <button onClick={() => setVisitorStatus('ai_chat')} className="text-xs text-gray-500 hover:text-gray-900 underline mt-2 cursor-pointer">取消排队</button>
         </div>
       )}
 
-      {currentSession.status === 'agent_chat' && (
+      {sessionStatus === 'agent_chat' && (
         <div className="p-4 bg-blue-50 border-t border-blue-100">
            <div className="flex items-center gap-1.5 mb-3 px-1 text-blue-700 text-xs font-medium">
               <Headphones className="w-3.5 h-3.5" /> 已接通人工客服
@@ -214,7 +221,7 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
         </div>
       )}
       
-      {currentSession.status === 'offline_leave' && (
+      {sessionStatus === 'offline_leave' && (
          <form onSubmit={handleLeaveSubmit} className="p-6 bg-white border-t border-gray-100 space-y-4">
             <div className="flex items-center gap-2 text-sm text-gray-900 font-bold">
                <AlertTriangle className="w-5 h-5 text-yellow-500" /> 客服离线，请留言
@@ -225,28 +232,9 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
             </div>
             <textarea required rows={3} value={offlineMessage} onChange={e=>setOfflineMessage(e.target.value)} placeholder="描述问题..." className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-purple-500 resize-none" />
             <div className="flex justify-end gap-2 pt-1">
-              <button type="button" onClick={()=>setVisitorStatus('ai_chat')} className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold cursor-pointer">返回</button>
               <button type="submit" className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold cursor-pointer">提交</button>
             </div>
          </form>
-      )}
-
-      {currentSession.status === 'closed' && (
-        <form onSubmit={handleFeedbackSubmit} className="p-6 bg-white border-t border-gray-100 flex flex-col items-center text-center space-y-4">
-          <h4 className="text-lg font-bold text-gray-900">对话已结束</h4>
-          <div className="flex gap-1.5">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button key={star} type="button" onClick={() => setRating(star)} onMouseEnter={() => setHoverRating(star)} onMouseLeave={() => setHoverRating(null)} className="cursor-pointer transition-transform hover:scale-110">
-                <Star className={`w-8 h-8 ${star <= (hoverRating !== null ? hoverRating : rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
-              </button>
-            ))}
-          </div>
-          <textarea value={feedbackText} onChange={e=>setFeedbackText(e.target.value)} placeholder="其他建议..." className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-purple-500 resize-none" rows={2} />
-          <div className="flex gap-2 w-full mt-2">
-            <button type="button" onClick={resetVisitorSession} className="flex-1 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold cursor-pointer">开启新对话</button>
-            <button type="submit" className="flex-1 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold cursor-pointer">提交评价</button>
-          </div>
-        </form>
       )}
     </div>
   );
