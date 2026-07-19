@@ -17,7 +17,7 @@ interface ChatState {
   disconnect: () => void;
   sendMessage: (text: string) => void;
   requestTransfer: () => void;
-  _pushMessage: (msg: Message) => void; // For testing and internal use
+  _pushMessage: (msg: Message) => void; // For testing and internal use.
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -125,3 +125,4 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set((state) => ({ messages: [...state.messages, msg] }));
   }
 }));
+
