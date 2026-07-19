@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../store/chatStore';
-import { Send, User, Cpu, Headphones, RefreshCw, Star, AlertTriangle, Wifi, WifiOff, X, MessageCircle } from 'lucide-react';
+import { Send, User, Cpu, Headphones, RefreshCw, AlertTriangle, Wifi, WifiOff, X, MessageCircle } from 'lucide-react';
 
 interface VisitorClientProps {
   isOpen: boolean;
@@ -8,15 +8,12 @@ interface VisitorClientProps {
 }
 
 export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose }) => {
-  const { wsStatus, sessionStatus, messages, connect, disconnect, sendMessage, requestTransfer } = useChatStore();
+  const { wsStatus, sessionStatus, messages, connect, sendMessage, requestTransfer } = useChatStore();
 
   const [input, setInput] = useState('');
   const [offlineName, setOfflineName] = useState('');
   const [offlineEmail, setOfflineEmail] = useState('');
   const [offlineMessage, setOfflineMessage] = useState('');
-  const [rating, setRating] = useState(5);
-  const [hoverRating, setHoverRating] = useState<number | null>(null);
-  const [feedbackText, setFeedbackText] = useState('');
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -44,11 +41,6 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
     alert('留言已提交：' + offlineMessage);
   };
 
-  const handleFeedbackSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Mock feedback for now
-    alert('反馈已提交：' + feedbackText);
-  };
 
   if (!isOpen) return null;
 
