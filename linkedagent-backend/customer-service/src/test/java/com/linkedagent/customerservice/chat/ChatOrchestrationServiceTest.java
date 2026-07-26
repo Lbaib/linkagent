@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +72,10 @@ class ChatOrchestrationServiceTest {
         return frames;
     }
 
+    private int streamChunkSize() {
+        return (Integer) ReflectionTestUtils.getField(service, "STREAM_CHUNK_SIZE");
+    }
+
     @Test
     void visitorChatStreamsAiAnswer() {
         when(routingService.getBoundAgent("visitor_abc")).thenReturn(Optional.empty());
@@ -85,6 +90,40 @@ class ChatOrchestrationServiceTest {
         assertTrue(last.get("payload").get("isDone").asBoolean());
         assertEquals("退货政策是七天无理由。", last.get("payload").get("text").asText());
         assertFalse(frames.get(0).get("payload").get("isDone").asBoolean());
+    }
+
+    @Test
+    void aiAnswerShorterThanChunkStreamsOneCompletedFrame() {
+        String answer = "x".repeat(streamChunkSize() - 1);
+        when(routingService.getBoundAgent("visitor_abc")).thenReturn(Optional.empty());
+        when(aiRagClient.ask(any())).thenReturn(Map.of("success", true, "answer", answer));
+
+        service.handleUpstream("visitor_abc", JwtRoles.VISITOR,
+                "{\"type\":\"CHAT\",\"payload\":{\"text\":\"问题\"}}");
+
+        List<JsonNode> frames = framesSentTo("visitor_abc");
+        assertEquals(1, frames.size());
+        assertEquals(WsFrames.AI_STREAM, frames.get(0).get("type").asText());
+        assertEquals(answer, frames.get(0).get("payload").get("text").asText());
+        assertTrue(frames.get(0).get("payload").get("isDone").asBoolean());
+    }
+
+    @Test
+    void aiAnswerAtExactChunkMultipleStreamsOnlyFinalFrameAsDone() {
+        String answer = "x".repeat(streamChunkSize() * 2);
+        when(routingService.getBoundAgent("visitor_abc")).thenReturn(Optional.empty());
+        when(aiRagClient.ask(any())).thenReturn(Map.of("success", true, "answer", answer));
+
+        service.handleUpstream("visitor_abc", JwtRoles.VISITOR,
+                "{\"type\":\"CHAT\",\"payload\":{\"text\":\"问题\"}}");
+
+        List<JsonNode> frames = framesSentTo("visitor_abc");
+        assertEquals(answer.length() / streamChunkSize(), frames.size());
+        assertTrue(frames.subList(0, frames.size() - 1).stream()
+                .allMatch(frame -> !frame.get("payload").get("isDone").asBoolean()));
+        JsonNode finalFrame = frames.get(frames.size() - 1);
+        assertTrue(finalFrame.get("payload").get("isDone").asBoolean());
+        assertEquals(answer, finalFrame.get("payload").get("text").asText());
     }
 
     @Test
@@ -153,6 +192,22 @@ class ChatOrchestrationServiceTest {
         service.handleUpstream("agent_1", JwtRoles.AGENT, "{\"type\":\"AGENT_READY\"}");
 
         verify(routingService).registerAgent("agent_1");
+    }
+
+    @Test
+    void visitorCannotRegisterAsAgent() {
+        service.handleUpstream("visitor_abc", JwtRoles.VISITOR, "{\"type\":\"AGENT_READY\"}");
+
+        verify(routingService, never()).registerAgent(anyString());
+        verify(publisher, never()).send(anyString(), anyString());
+    }
+
+    @Test
+    void agentCannotTransferItselfToAgentQueue() {
+        service.handleUpstream("agent_1", JwtRoles.AGENT, "{\"type\":\"TRANSFER_AGENT\"}");
+
+        verify(routingService, never()).assignAgent(anyString());
+        verify(publisher, never()).send(anyString(), anyString());
     }
 
     @Test

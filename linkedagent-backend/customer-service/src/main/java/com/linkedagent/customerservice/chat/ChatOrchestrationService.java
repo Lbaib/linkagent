@@ -51,6 +51,7 @@ public class ChatOrchestrationService {
         String type = frame.path("type").asText("");
         JsonNode payload = frame.path("payload");
         boolean isAgent = JwtRoles.AGENT.equals(role);
+        boolean isVisitor = JwtRoles.VISITOR.equals(role);
 
         switch (type) {
             case WsFrames.CHAT -> {
@@ -60,8 +61,20 @@ public class ChatOrchestrationService {
                     handleVisitorChat(connectionId, payload);
                 }
             }
-            case WsFrames.TRANSFER_AGENT -> handleTransfer(connectionId);
-            case WsFrames.AGENT_READY -> routingService.registerAgent(connectionId);
+            case WsFrames.TRANSFER_AGENT -> {
+                if (isVisitor) {
+                    handleTransfer(connectionId);
+                } else {
+                    log.warn("Ignoring TRANSFER_AGENT from non-visitor connection {}", connectionId);
+                }
+            }
+            case WsFrames.AGENT_READY -> {
+                if (isAgent) {
+                    routingService.registerAgent(connectionId);
+                } else {
+                    log.warn("Ignoring AGENT_READY from non-agent connection {}", connectionId);
+                }
+            }
             case WsFrames.DISCONNECT -> handleDisconnect(connectionId, isAgent);
             default -> log.debug("Unhandled frame type {} from {}", type, connectionId);
         }
