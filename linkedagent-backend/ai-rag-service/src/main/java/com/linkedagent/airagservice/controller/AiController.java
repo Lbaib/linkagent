@@ -1,6 +1,7 @@
 package com.linkedagent.airagservice.controller;
 
 import com.linkedagent.airagservice.entity.DocumentChunk;
+import com.linkedagent.airagservice.exception.AiServiceException;
 import com.linkedagent.airagservice.repository.DocumentChunkRepository;
 import com.linkedagent.airagservice.service.AiRagService;
 import com.linkedagent.airagservice.service.DocumentParserService;
@@ -38,13 +39,16 @@ public class AiController {
     public Map<String, Object> askQuestion(@RequestBody Map<String, String> payload) {
         String query = payload.get("query");
         String sessionId = payload.getOrDefault("sessionId", "anonymous");
-        
-        // Synchronous call to real AI
-        String answer = aiRagService.generateResponseSync(sessionId, query);
-        
+
         Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("answer", answer);
+        try {
+            result.put("success", true);
+            result.put("answer", aiRagService.generateResponseSync(sessionId, query));
+        } catch (AiServiceException e) {
+            result.clear();
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
         return result;
     }
 

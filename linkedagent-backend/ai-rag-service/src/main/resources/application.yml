@@ -27,4 +27,5 @@ server:
 openai:
   api:
     base-url: ${OPENAI_API_BASE_URL:https://yundu.lat}
-    key: ${OPENAI_API_KEY:sk-dummy-key}
+    key: ${OPENAI_API_KEY:}
+    chat-model: ${OPENAI_CHAT_MODEL:gpt-5.5}
