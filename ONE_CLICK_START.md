@@ -31,6 +31,8 @@ docker compose up -d; Get-Process -Name java, node -ErrorAction SilentlyContinue
 
 #### 🔸 A. 五组 Java 核心微服务守护阵线 (WorkingDirectory: `E:\SDD+Harness\LinkAgent\linkedagent-backend`)
 均通过原装驱动承载特使传参规绝一切网络干扰：
+
+> **JWT：** 每个后端服务进程启动前须设置同一环境变量 `LINKEDAGENT_JWT_SECRET=<set-a-shared-secret-min-32-chars>`（≥32 字符，各服务取值必须一致）。
 1. **网关指路者 (api-gateway :8080)**
    ```cmd
    cmd.exe /c "mvn spring-boot:run -pl api-gateway -Dspring-boot.run.arguments=--server.address=127.0.0.1"

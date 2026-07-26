@@ -2,6 +2,8 @@ package com.linkedagent.chatserver.websocket;
 
 import com.linkedagent.common.constant.JwtRoles;
 import com.linkedagent.common.util.JwtUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpResponse;
@@ -17,7 +19,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JwtWebSocketInterceptorTest {
 
+    private static final String TEST_SECRET = "test-only-linkedagent-jwt-secret-32b!";
+    private static final String PROPERTY = "linkedagent.jwt.secret";
+
     private final JwtWebSocketInterceptor interceptor = new JwtWebSocketInterceptor();
+
+    @BeforeEach
+    void setUpSecret() {
+        JwtUtils.clearCachedSecret();
+        System.setProperty(PROPERTY, TEST_SECRET);
+    }
+
+    @AfterEach
+    void tearDownSecret() {
+        System.clearProperty(PROPERTY);
+        JwtUtils.clearCachedSecret();
+    }
 
     private boolean handshake(String token, Map<String, Object> attributes) throws Exception {
         MockHttpServletRequest servletRequest = new MockHttpServletRequest();

@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -156,6 +157,7 @@ class ChatOrchestrationServiceTest {
 
     @Test
     void transferWithOnlineAgentMovesBothSidesToAgentChat() {
+        when(routingService.getBoundAgent("visitor_abc")).thenReturn(Optional.empty());
         when(routingService.assignAgent("visitor_abc")).thenReturn(Optional.of("agent_1"));
 
         service.handleUpstream("visitor_abc", JwtRoles.VISITOR, "{\"type\":\"TRANSFER_AGENT\"}");
@@ -174,7 +176,36 @@ class ChatOrchestrationServiceTest {
     }
 
     @Test
+    void secondTransferIsIdempotentAndRePublishesToSameBoundAgent() {
+        when(routingService.getBoundAgent("visitor_abc"))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of("agent_1"));
+        when(routingService.assignAgent("visitor_abc")).thenReturn(Optional.of("agent_1"));
+
+        service.handleUpstream("visitor_abc", JwtRoles.VISITOR, "{\"type\":\"TRANSFER_AGENT\"}");
+        service.handleUpstream("visitor_abc", JwtRoles.VISITOR, "{\"type\":\"TRANSFER_AGENT\"}");
+
+        verify(routingService, times(1)).assignAgent("visitor_abc");
+
+        List<JsonNode> agentFrames = framesSentTo("agent_1");
+        long sessionOffers = agentFrames.stream()
+                .filter(f -> WsFrames.SESSION_OFFER.equals(f.get("type").asText()))
+                .count();
+        assertEquals(2, sessionOffers);
+        assertTrue(agentFrames.stream().anyMatch(f -> WsFrames.STATUS_UPDATE.equals(f.get("type").asText())
+                && "agent_chat".equals(f.get("payload").get("status").asText())));
+
+        List<JsonNode> visitorFrames = framesSentTo("visitor_abc");
+        long agentChatStatuses = visitorFrames.stream()
+                .filter(f -> WsFrames.STATUS_UPDATE.equals(f.get("type").asText())
+                        && "agent_chat".equals(f.get("payload").get("status").asText()))
+                .count();
+        assertEquals(2, agentChatStatuses);
+    }
+
+    @Test
     void transferWithoutAgentKeepsVisitorQueuing() {
+        when(routingService.getBoundAgent("visitor_abc")).thenReturn(Optional.empty());
         when(routingService.assignAgent("visitor_abc")).thenReturn(Optional.empty());
 
         service.handleUpstream("visitor_abc", JwtRoles.VISITOR, "{\"type\":\"TRANSFER_AGENT\"}");

@@ -116,6 +116,15 @@ public class ChatOrchestrationService {
     }
 
     private void handleTransfer(String visitorId) {
+        Optional<String> alreadyBound = routingService.getBoundAgent(visitorId);
+        if (alreadyBound.isPresent()) {
+            String agentId = alreadyBound.get();
+            publisher.send(visitorId, statusFrame("agent_chat"));
+            publisher.send(agentId, sessionOfferFrame(visitorId));
+            publisher.send(agentId, statusFrame("agent_chat"));
+            return;
+        }
+
         Optional<String> agentId = routingService.assignAgent(visitorId);
         if (agentId.isPresent()) {
             publisher.send(visitorId, statusFrame("agent_chat"));
