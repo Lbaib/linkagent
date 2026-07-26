@@ -3,9 +3,14 @@ package com.linkedagent.chatserver.websocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.linkedagent.chatserver.config.RedisPubSubConfig;
+import com.linkedagent.common.constant.ChatChannels;
+import com.linkedagent.common.constant.JwtRoles;
+import com.linkedagent.common.constant.WsFrames;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PingMessage;
@@ -20,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatWebSocketHandler.class);
+
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -27,82 +34,97 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private StringRedisTemplate redisTemplate;
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String visitorId = (String) session.getAttributes().get("visitorId");
-        if (visitorId != null) {
-            sessions.put(visitorId, session);
-            System.out.println("Connection established for visitor: " + visitorId);
+    public void afterConnectionEstablished(WebSocketSession session) {
+        String connectionId = connectionId(session);
+        if (connectionId != null) {
+            sessions.put(connectionId, session);
+            log.info("WebSocket connected: {} ({})", connectionId, role(session));
         }
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String visitorId = (String) session.getAttributes().get("visitorId");
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+        String connectionId = connectionId(session);
+        if (connectionId == null) {
+            return;
+        }
         String payload = message.getPayload();
-        
         try {
-            JsonNode jsonNode = objectMapper.readTree(payload);
-            String type = jsonNode.has("type") ? jsonNode.get("type").asText() : "";
-            
-            if ("direct".equals(type) && jsonNode.has("to")) {
-                String targetId = jsonNode.get("to").asText();
-                // Publish to Redis Pub/Sub for distributed routing
-                ObjectNode publishMsg = objectMapper.createObjectNode();
-                publishMsg.put("targetId", targetId);
-                publishMsg.put("from", visitorId);
-                publishMsg.put("content", payload);
-                redisTemplate.convertAndSend(RedisPubSubConfig.CHAT_TOPIC, publishMsg.toString());
-            } else {
-                // Buffer to Redis for saving
-                redisTemplate.opsForList().rightPush("chat:messages", visitorId + ":" + payload);
+            JsonNode frame = objectMapper.readTree(payload);
+            if (!frame.hasNonNull("type")) {
+                log.warn("Dropping frame without type from {}", connectionId);
+                return;
             }
+            publishUpstream(connectionId, role(session), payload);
         } catch (Exception e) {
-            System.err.println("Invalid message format: " + payload);
+            log.warn("Dropping malformed frame from {}: {}", connectionId, e.getMessage());
         }
     }
 
-    // Method called by RedisMessageListenerAdapter
+    /** Invoked by MessageListenerAdapter for the downstream channel. */
     public void handleRedisMessage(String message) {
         try {
-            JsonNode jsonNode = objectMapper.readTree(message);
-            String targetId = jsonNode.get("targetId").asText();
-            String content = jsonNode.get("content").asText();
-            
-            WebSocketSession targetSession = sessions.get(targetId);
-            if (targetSession != null && targetSession.isOpen()) {
-                targetSession.sendMessage(new TextMessage(content));
+            JsonNode node = objectMapper.readTree(message);
+            String targetId = node.path("targetId").asText(null);
+            String frame = node.path("frame").asText(null);
+            if (targetId == null || frame == null) {
+                return;
+            }
+            WebSocketSession target = sessions.get(targetId);
+            if (target != null && target.isOpen()) {
+                target.sendMessage(new TextMessage(frame));
             }
         } catch (Exception e) {
-            System.err.println("Failed to handle redis pubsub msg: " + e.getMessage());
+            log.warn("Failed to deliver downstream message: {}", e.getMessage());
         }
     }
 
     @Override
-    protected void handlePongMessage(WebSocketSession session, PongMessage message) throws Exception {
-        System.out.println("Received pong from session: " + session.getId());
+    protected void handlePongMessage(WebSocketSession session, PongMessage message) {
+        log.debug("Pong from {}", connectionId(session));
     }
 
-    // 6.3 Proactive keep-alive Ping
-    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 30000)
     public void sendPings() {
-        PingMessage pingMessage = new PingMessage();
+        PingMessage ping = new PingMessage();
         sessions.values().forEach(session -> {
             try {
                 if (session.isOpen()) {
-                    session.sendMessage(pingMessage);
+                    session.sendMessage(ping);
                 }
             } catch (Exception e) {
-                // Ignore, will be cleaned up on close
+                log.debug("Ping failed, session will be cleaned up on close");
             }
         });
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String visitorId = (String) session.getAttributes().get("visitorId");
-        if (visitorId != null) {
-            sessions.remove(visitorId);
-            System.out.println("Connection closed for visitor: " + visitorId);
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String connectionId = connectionId(session);
+        if (connectionId == null) {
+            return;
         }
+        sessions.remove(connectionId);
+        log.info("WebSocket closed: {} ({})", connectionId, status.getCode());
+        ObjectNode frame = objectMapper.createObjectNode();
+        frame.put("type", WsFrames.DISCONNECT);
+        publishUpstream(connectionId, role(session), frame.toString());
+    }
+
+    private void publishUpstream(String connectionId, String role, String frameJson) {
+        ObjectNode envelope = objectMapper.createObjectNode();
+        envelope.put("connectionId", connectionId);
+        envelope.put("role", role);
+        envelope.put("frame", frameJson);
+        redisTemplate.convertAndSend(ChatChannels.UPSTREAM, envelope.toString());
+    }
+
+    private String connectionId(WebSocketSession session) {
+        return (String) session.getAttributes().get(JwtWebSocketInterceptor.ATTR_CONNECTION_ID);
+    }
+
+    private String role(WebSocketSession session) {
+        Object role = session.getAttributes().get(JwtWebSocketInterceptor.ATTR_ROLE);
+        return role == null ? JwtRoles.VISITOR : (String) role;
     }
 }
