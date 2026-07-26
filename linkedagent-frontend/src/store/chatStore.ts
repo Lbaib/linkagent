@@ -42,7 +42,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   lastError: null,
 
   connect: async () => {
-    if (get().ws) return;
+    if (get().ws || get().wsStatus === 'connecting') return;
 
     set({ wsStatus: 'connecting', lastError: null });
 
@@ -75,10 +75,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
         if (data.type === 'AI_STREAM') {
           set((state) => {
             const msgs = [...state.messages];
-            const lastMsg = msgs[msgs.length - 1];
-            if (lastMsg && lastMsg.sender === 'ai' && lastMsg.isStreaming) {
-              msgs[msgs.length - 1] = {
-                ...lastMsg,
+            let streamingIdx = -1;
+            for (let i = msgs.length - 1; i >= 0; i--) {
+              if (msgs[i].sender === 'ai' && msgs[i].isStreaming) {
+                streamingIdx = i;
+                break;
+              }
+            }
+            if (streamingIdx >= 0) {
+              const streamingMsg = msgs[streamingIdx];
+              msgs[streamingIdx] = {
+                ...streamingMsg,
                 text: data.payload.text,
                 isStreaming: !data.payload.isDone
               };

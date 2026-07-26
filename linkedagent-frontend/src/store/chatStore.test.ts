@@ -1,5 +1,6 @@
 import { act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { authApi } from '../api/auth';
 import { useChatStore } from './chatStore';
 
 vi.mock('../api/auth', () => ({
@@ -10,6 +11,7 @@ vi.mock('../api/auth', () => ({
 
 class FakeWebSocket {
   static last: FakeWebSocket | null = null;
+  static constructCount = 0;
   url: string;
   sent: string[] = [];
   onopen: (() => void) | null = null;
@@ -20,6 +22,7 @@ class FakeWebSocket {
   constructor(url: string) {
     this.url = url;
     FakeWebSocket.last = this;
+    FakeWebSocket.constructCount += 1;
   }
 
   send(data: string) {
@@ -36,6 +39,9 @@ const initialState = useChatStore.getState();
 beforeEach(() => {
   sessionStorage.clear();
   FakeWebSocket.last = null;
+  FakeWebSocket.constructCount = 0;
+  vi.mocked(authApi.getAnonymousToken).mockReset();
+  vi.mocked(authApi.getAnonymousToken).mockResolvedValue({ token: 'jwt-token', visitorId: 'visitor_abc' });
   vi.stubGlobal('WebSocket', FakeWebSocket as unknown as typeof WebSocket);
   useChatStore.setState({ ...initialState, ws: null, messages: initialState.messages.slice(0, 1) }, true);
 });
@@ -113,5 +119,70 @@ describe('chatStore', () => {
     expect(FakeWebSocket.last?.sent[0]).toBe(JSON.stringify({ type: 'CHAT', payload: { text: '你好' } }));
     expect(FakeWebSocket.last?.sent[1]).toBe(JSON.stringify({ type: 'TRANSFER_AGENT' }));
     expect(useChatStore.getState().sessionStatus).toBe('queuing');
+  });
+
+  it('ignores concurrent connect() while still connecting', async () => {
+    let resolveToken!: (value: { token: string; visitorId: string }) => void;
+    const tokenPromise = new Promise<{ token: string; visitorId: string }>((resolve) => {
+      resolveToken = resolve;
+    });
+    vi.mocked(authApi.getAnonymousToken).mockReturnValue(tokenPromise);
+
+    const first = useChatStore.getState().connect();
+    const second = useChatStore.getState().connect();
+
+    expect(useChatStore.getState().wsStatus).toBe('connecting');
+
+    await act(async () => {
+      resolveToken({ token: 'jwt-token', visitorId: 'visitor_abc' });
+      await Promise.all([first, second]);
+    });
+
+    expect(authApi.getAnonymousToken).toHaveBeenCalledTimes(1);
+    expect(FakeWebSocket.constructCount).toBe(1);
+  });
+
+  it('continues AI_STREAM into the in-flight ai message after a mid-stream CHAT', async () => {
+    await connectAndOpen();
+
+    receive({ type: 'AI_STREAM', payload: { text: '正在转接', isDone: false } });
+    receive({ type: 'CHAT', payload: { sender: 'system', text: '已为您转接人工客服' } });
+    receive({ type: 'AI_STREAM', payload: { text: '正在转接，请稍候', isDone: false } });
+    receive({ type: 'AI_STREAM', payload: { text: '正在转接，请稍候。', isDone: true } });
+
+    const messages = useChatStore.getState().messages;
+    const aiMessages = messages.filter((m) => m.sender === 'ai');
+    // welcome + one streaming answer
+    expect(aiMessages).toHaveLength(2);
+    const streamed = aiMessages[aiMessages.length - 1];
+    expect(streamed.text).toBe('正在转接，请稍候。');
+    expect(streamed.isStreaming).toBe(false);
+
+    const chatIdx = messages.findIndex((m) => m.text === '已为您转接人工客服');
+    const aiIdx = messages.findIndex((m) => m === streamed);
+    expect(chatIdx).toBeGreaterThan(-1);
+    expect(chatIdx).toBeGreaterThan(aiIdx);
+  });
+
+  it('continues AI_STREAM into the in-flight ai message after a mid-stream ERROR', async () => {
+    await connectAndOpen();
+
+    receive({ type: 'AI_STREAM', payload: { text: '部分回答', isDone: false } });
+    receive({ type: 'ERROR', payload: { code: 'TRANSIENT', message: '中间提示错误' } });
+    receive({ type: 'AI_STREAM', payload: { text: '部分回答已更新', isDone: false } });
+    receive({ type: 'AI_STREAM', payload: { text: '部分回答已更新完毕', isDone: true } });
+
+    const messages = useChatStore.getState().messages;
+    const aiMessages = messages.filter((m) => m.sender === 'ai');
+    expect(aiMessages).toHaveLength(2);
+    const streamed = aiMessages[aiMessages.length - 1];
+    expect(streamed.text).toBe('部分回答已更新完毕');
+    expect(streamed.isStreaming).toBe(false);
+
+    const errorIdx = messages.findIndex((m) => m.text === '中间提示错误');
+    const aiIdx = messages.findIndex((m) => m === streamed);
+    expect(errorIdx).toBeGreaterThan(-1);
+    expect(errorIdx).toBeGreaterThan(aiIdx);
+    expect(useChatStore.getState().lastError).toBe('中间提示错误');
   });
 });
