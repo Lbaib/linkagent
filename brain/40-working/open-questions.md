@@ -1,6 +1,6 @@
 ---
 type: working
-updated: 2026-07-25
+updated: 2026-07-26
 tags: [工作记忆, 待决]
 ---
 
@@ -8,15 +8,11 @@ tags: [工作记忆, 待决]
 
 ## 待决
 
-- [ ] `.agent/skills/`（**单数**）下的 5 个 openspec skill 不在任何工具的扫描路径上，实际从未被加载（证据：会话中挂载的 skill 仅有 `.agents/skills/` 下的条目）。是否迁移到 `.agents/skills/`？涉及既有 opsx 工具链约定，需用户确认后再动。(2026-07-25 / ADR-0005)
-- [ ] git 工作区中 `target/` 编译产物被跟踪且频繁出现在 diff 中，是否应补充 `.gitignore` 并从索引移除？(2026-07-25)
-- [ ] `DocumentController` 在 ai-rag-service 中被删除，知识库文档上传入口是否已迁移到 system-management？需触碰该模块时确认并更新 [[project-map]]。(2026-07-25)
-
-## 已解决（待巩固时清理）
-
-- [x] 记忆库是否需要 Antigravity 专属入口？→ 本期用公共薄 `AGENTS.md` 覆盖 Codex+Antigravity，与 companion 策略一致；需要时再加。(2026-07-25 / ADR-0004)
-- [x] 入口双份漂移 / 日常难用 / 代码无反向指针 → v2 加固已处理。(2026-07-25)
+- [ ] `.agent/skills/`（**单数**）下的 5 个 openspec skill 不在扫描路径上。是否迁移到 `.agents/skills/`？用户曾决定暂时不动。(2026-07-25 / ADR-0005)
+- [ ] 仓库根目录无 `.gitignore`，`target/` 等编译产物仍被跟踪、污染 diff。是否补根 `.gitignore` 并从索引移除已跟踪的 `target/`？(2026-07-25；2026-07-26 巩固确认)
+- [ ] `DocumentController` 在 ai-rag-service 中被删除，知识库文档上传入口是否已迁到 system-management？触碰该模块时确认并更新 [[project-map]]。(2026-07-25)
+- [ ] 设计类 skills（7 个）与治理 skills 并列在 `.agents/skills/`，存在稀释风险。是否隔离、降权或移出默认加载？巩固时样本不足 3 次操作套路，未铸造处理 skill。(2026-07-26 首次巩固)
 
 ## 相关
 
-[[current-focus]] · [[memory-map]]
+[[current-focus]] · [[2026-07-26-首次记忆巩固]] · [[memory-map]]

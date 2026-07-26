@@ -1,6 +1,7 @@
 ---
 type: index
 created: 2026-07-25
+updated: 2026-07-26
 status: evolving
 tags: [程序记忆, 技能]
 ---
@@ -9,7 +10,7 @@ tags: [程序记忆, 技能]
 
 > 完整步骤在各 `SKILL.md` 里，本文只做索引与选型说明。新增 skill 时更新此表。
 
-## 项目私有 skills（`.agents/skills/`）
+## 治理 / 记忆类（项目私有，优先）
 
 | Skill | 用途 | 触发方式 |
 |---|---|---|
@@ -17,10 +18,15 @@ tags: [程序记忆, 技能]
 | `adr-write` | 架构决策 → `10-semantic/decisions/` | 自动 / 收尾时 |
 | `session-wrap` | 会话收尾全流程 | 自动 / `/收尾` |
 | `skill-forge` | 把重复套路铸成新 skill | 巩固时 / `/巩固记忆` |
+| `agent-entry-sync` | 基线/端口/边界变更时同步根 AGENTS + Skills + brain | 自动（改合同/ADR/基线时） |
 | `ws-contract-check` | WS + JWT 握手契约跨端一致性 | 改 chat-server / common-core / 前端 store 时自动 |
 | `rag-guardrails` | 防腐层、pgvector、Prompt 护栏 | 改 ai-rag-service / system-management 时自动 |
 
-后两个带 `paths` 限定，只在相关目录的改动中出现，避免噪音。
+带 `paths` 的后两个只在相关目录改动时出现，避免噪音。`agent-entry-sync` 由 2026-07-26 首次巩固铸造，证据见回顾 [[2026-07-26-首次记忆巩固]]。
+
+## 设计类（已跟踪，注意稀释）
+
+`banner-design` / `brand` / `design` / `design-system` / `slides` / `ui-styling` / `ui-ux-pro-max` 仍在 `.agents/skills/`，与治理类并列加载。巩固时判定：尚未形成「隔离/降权」的 ≥3 次操作套路，**本次不铸新 skill、不擅自移走**；保留为待决，见 [[open-questions]]。
 
 ## 四种机制怎么选
 
@@ -33,12 +39,10 @@ tags: [程序记忆, 技能]
 
 ## 发现路径（重要）
 
-Cursor 与 Codex 自动扫描的项目级 skill 目录只有：`.agents/skills/`、`.cursor/skills/`、`.claude/skills/`、`.codex/skills/`。
+Cursor 与 Codex 自动扫描：`.agents/skills/`、`.cursor/skills/`、`.claude/skills/`、`.codex/skills/`。本仓治理 Skills 统一在 **`.agents/skills/`**。
 
-本仓选 **`.agents/skills/`**，因为 Cursor 和 Codex 都认它，覆盖面最广。
-
-⚠️ 已知问题：仓库里 `.agent/skills/`（**单数**）下的 5 个 openspec skill 不在扫描路径上，实际未被加载，目前只能靠 `.agent/workflows/opsx-*.md` 文档指路。详见 `brain/40-working/open-questions.md`。
+⚠️ `.agent/skills/`（单数）下的 openspec skill 仍不在扫描路径；用户决定暂不迁移。
 
 ## 相关
 
-[[memory-map]] · [[memory-consolidation]] · [[daily-usage]]
+[[memory-map]] · [[memory-consolidation]] · [[agent-entry-layering]] · [[daily-usage]]
