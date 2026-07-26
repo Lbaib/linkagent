@@ -1,5 +1,6 @@
 package com.linkedagent.customerservice.service;
 
+import com.linkedagent.common.constant.JwtRoles;
 import com.linkedagent.common.util.JwtUtils;
 import com.linkedagent.customerservice.entity.SysUser;
 import com.linkedagent.customerservice.repository.SysUserRepository;
@@ -44,7 +45,7 @@ public class AuthService {
         }
 
         // Generate token
-        String token = JwtUtils.generateToken(user.getUsername());
+        String token = JwtUtils.generateToken(user.getUsername(), JwtRoles.AGENT);
         
         Map<String, String> data = new HashMap<>();
         data.put("token", token);

@@ -1,5 +1,6 @@
 package com.linkedagent.customerservice.controller;
 
+import com.linkedagent.common.constant.JwtRoles;
 import com.linkedagent.common.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,7 @@ public class AuthController {
     @GetMapping("/anonymous")
     public Map<String, Object> getAnonymousToken() {
         String visitorId = "visitor_" + UUID.randomUUID().toString();
-        String token = JwtUtils.generateToken(visitorId);
+        String token = JwtUtils.generateToken(visitorId, JwtRoles.VISITOR);
         
         Map<String, String> data = new HashMap<>();
         data.put("token", token);

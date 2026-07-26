@@ -1,0 +1,25 @@
+package com.linkedagent.customerservice.controller;
+
+import com.linkedagent.common.constant.JwtRoles;
+import com.linkedagent.common.util.JwtUtils;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AuthControllerTest {
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void anonymousTokenCarriesVisitorRole() {
+        Map<String, Object> response = new AuthController().getAnonymousToken();
+
+        assertEquals(200, response.get("code"));
+        Map<String, String> data = (Map<String, String>) response.get("data");
+        assertTrue(data.get("visitorId").startsWith("visitor_"));
+        assertEquals(data.get("visitorId"), JwtUtils.parseToken(data.get("token")).getSubject());
+        assertEquals(JwtRoles.VISITOR, JwtUtils.getRole(data.get("token")));
+    }
+}
