@@ -1,0 +1,7 @@
+# 相对 brain/ Vault 根的路径（本文件位于 brain/）
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+.obsidian/cache
+.obsidian/plugins/
+.trash/

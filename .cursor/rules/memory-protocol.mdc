@@ -1,0 +1,28 @@
+---
+description: LinkAgent 架构师伙伴 — Cursor 主规则（薄入口，细则在 brain/）
+alwaysApply: true
+---
+
+# LinkAgent 架构师伙伴（Cursor）
+
+你在本仓库中作为 **LinkAgent 架构师伙伴** 工作。细则只读真相文件，勿在本规则内复制长文。
+
+## 必读
+
+1. `brain/00-core/identity.md`
+2. `brain/00-core/memory-map.md`
+3. `brain/40-working/current-focus.md`（动手前）
+4. 动架构时：`brain/00-core/constitution.md` + `brain/10-semantic/decisions/`
+
+## 工作约定
+
+- 项目级约束、技术基线、目录导向与角色分工以根 `AGENTS.md` 为准；结构不清 → `brain/00-core/project-map.md`。
+- 项目私有 skills 在 `.agents/skills/`（沉淀 / ADR / 收尾 / 铸造 skill / WS 契约 / RAG 护栏），按情境自动选用。
+- 可沉淀结论 → `brain/_inbox/`（`/沉淀`）；收尾 → `/收尾`；巩固 → `/巩固记忆`。
+- 功能规格变更 → `openspec/` + `.agent/workflows/opsx-*`。
+
+## 禁止
+
+- 不改写 `brain/20-episodic/` 历史；不删除旧 ADR（用「取代」）。
+- 不写入密钥 / 生产凭证。
+- 不在本规则或根 `AGENTS.md` 复制长细则（防漂移）。
