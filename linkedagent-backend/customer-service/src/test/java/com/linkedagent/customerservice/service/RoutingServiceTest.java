@@ -16,15 +16,15 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class RoutingServiceTest {
 
     private RoutingService routingService;
+    private StringRedisTemplate redisTemplate;
     private ValueOperations<String, String> valueOps;
     private ZSetOperations<String, String> zSetOps;
     private SetOperations<String, String> setOps;
@@ -33,7 +33,7 @@ class RoutingServiceTest {
     @BeforeEach
     void setUp() {
         routingService = new RoutingService();
-        StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
+        redisTemplate = mock(StringRedisTemplate.class);
         valueOps = mock(ValueOperations.class);
         zSetOps = mock(ZSetOperations.class);
         setOps = mock(SetOperations.class);
@@ -95,7 +95,9 @@ class RoutingServiceTest {
         Set<String> released = routingService.unregisterAgent("agent_1");
 
         assertEquals(Set.of("visitor_abc"), released);
+        verify(redisTemplate).delete("session:bind:visitor_abc");
         verify(valueOps).set("session:state:visitor_abc", "QUEUEING");
+        verify(redisTemplate).delete("agent:sessions:agent_1");
         verify(zSetOps).remove("agents:active", "agent_1");
     }
 
@@ -110,6 +112,30 @@ class RoutingServiceTest {
     void markQueueingWritesState() {
         routingService.markQueueing("visitor_abc");
 
+        verify(valueOps).set("session:state:visitor_abc", "QUEUEING");
+    }
+
+    @Test
+    void releaseVisitorUnbindsAndReturnsToQueue() {
+        when(valueOps.get("session:bind:visitor_abc")).thenReturn("agent_1");
+
+        routingService.releaseVisitor("visitor_abc");
+
+        verify(setOps).remove("agent:sessions:agent_1", "visitor_abc");
+        verify(zSetOps).incrementScore("agents:active", "agent_1", -1);
+        verify(redisTemplate).delete("session:bind:visitor_abc");
+        verify(valueOps).set("session:state:visitor_abc", "QUEUEING");
+    }
+
+    @Test
+    void releaseVisitorWithNoBindingStillSetsQueueing() {
+        when(valueOps.get("session:bind:visitor_abc")).thenReturn(null);
+
+        routingService.releaseVisitor("visitor_abc");
+
+        verifyNoInteractions(setOps);
+        verifyNoInteractions(zSetOps);
+        verify(redisTemplate).delete("session:bind:visitor_abc");
         verify(valueOps).set("session:state:visitor_abc", "QUEUEING");
     }
 }
