@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useSimulation } from '../context/SimulationContext';
+import { useAgentStore } from '../store/agentStore';
 import { Users, Clock, MessageSquare, Activity, CornerDownRight, CheckCircle, UserCheck, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { askAiAssistant } from '../services/api';
 
@@ -7,8 +7,9 @@ export const AgentWorkbench: React.FC = () => {
   const {
     agentState, setAgentState, activeSessions, queuedSessions,
     selectedSessionId, setSelectedSessionId, sendAgentMessage,
-    acceptSession, closeSessionByAgent, agentConfig, metrics
-  } = useSimulation();
+    acceptSession, closeSessionByAgent, agentConfig, metrics,
+    wsStatus, connect
+  } = useAgentStore();
 
   const [input, setInput] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -19,6 +20,12 @@ export const AgentWorkbench: React.FC = () => {
   const [aiError, setAiError] = useState('');
   
   const selectedSession = activeSessions.find(s => s.id === selectedSessionId) || queuedSessions.find(s => s.id === selectedSessionId);
+
+  useEffect(() => {
+    if (wsStatus === 'disconnected') {
+      connect();
+    }
+  }, [wsStatus, connect]);
 
   const templates = [
     '您好！我是人工客服专员，很高兴为您服务。请问有什么可以帮您？',
