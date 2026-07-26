@@ -19,7 +19,7 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
 
   useEffect(() => {
     if (isOpen && wsStatus === 'disconnected') {
-      connect();
+      void connect();
     }
   }, [isOpen, wsStatus, connect]);
 
@@ -37,8 +37,7 @@ export const VisitorClient: React.FC<VisitorClientProps> = ({ isOpen, onClose })
   const handleLeaveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!offlineName || !offlineEmail || !offlineMessage) return;
-    // Mock leave submit for now
-    alert('留言已提交：' + offlineMessage);
+    alert('离线留言功能尚未接入后端，本次演示不会保存内容。');
   };
 
 
