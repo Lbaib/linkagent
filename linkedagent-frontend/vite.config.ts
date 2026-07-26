@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -13,7 +13,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://127.0.0.1:8085',
+        target: 'ws://127.0.0.1:8081',
         ws: true,
       }
     }

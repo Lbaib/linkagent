@@ -16,7 +16,7 @@ public class JwtWebSocketInterceptor implements HandshakeInterceptor {
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         if (request instanceof ServletServerHttpRequest) {
             String token = ((ServletServerHttpRequest) request).getServletRequest().getParameter("token");
-            if (token != null) {
+            if (token != null && !token.isEmpty()) {
                 try {
                     String visitorId = JwtUtils.parseToken(token).getSubject();
                     attributes.put("visitorId", visitorId);

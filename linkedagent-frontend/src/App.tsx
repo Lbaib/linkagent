@@ -5,8 +5,9 @@ import { LoginPage } from './components/LoginPage';
 import { RequireAuth } from './components/RequireAuth';
 import { AgentWorkbench } from './components/AgentWorkbench';
 import AdminConsole from './pages/AdminConsole/AdminConsole';
-import { TopNav } from './components/TopNav'; // Ignore missing import error for now, we'll build it in Task 2
+import { TopNav } from './components/TopNav';
 import { VisitorClient } from './components/VisitorClient';
+import { LandingPage } from './pages/LandingPage';
 import { useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 
@@ -16,6 +17,10 @@ function AppShell() {
   return (
     <div className="min-h-screen bg-slate-50 text-gray-900 flex flex-col font-body">
       <Routes>
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Login Page */}
         <Route path="/login" element={<LoginPage />} />
         
         {/* Protected routes wrapped in RequireAuth */}
@@ -49,9 +54,8 @@ function AppShell() {
           </RequireAuth>
         } />
 
-        {/* Redirect root and unknowns to /login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Redirect unknowns to / */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       <VisitorClient isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />

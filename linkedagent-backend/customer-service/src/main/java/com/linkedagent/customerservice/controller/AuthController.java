@@ -1,6 +1,7 @@
 package com.linkedagent.customerservice.controller;
 
 import com.linkedagent.common.util.JwtUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    @Autowired
+    private com.linkedagent.customerservice.service.AuthService authService;
 
     @GetMapping("/anonymous")
     public Map<String, Object> getAnonymousToken() {
@@ -35,29 +39,33 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> request) {
         String username = request.get("username");
-        String token = JwtUtils.generateToken(username != null ? username : "test_admin");
+        String password = request.get("password");
         
-        Map<String, String> data = new HashMap<>();
-        data.put("token", token);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "success");
-        response.put("data", data);
-        return response;
+        if (username == null || password == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 400);
+            response.put("message", "Username and password required");
+            return response;
+        }
+
+        return authService.login(username, password);
     }
 
     @GetMapping("/user-info")
-    public Map<String, Object> getUserInfo() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", 1);
-        data.put("username", "test_admin");
-        data.put("roles", new String[]{"ROLE_ADMIN"});
+    public Map<String, Object> getUserInfo(@org.springframework.web.bind.annotation.RequestHeader(value = "Authorization", required = false) String authHeader) {
+        // In a real scenario, interceptors/filters usually parse the token and put it in context.
+        // For simplicity, we just extract from header here, assuming format "Bearer token"
+        String username = "test_admin"; // Default fallback if no token
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "success");
-        response.put("data", data);
-        return response;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                String token = authHeader.substring(7);
+                username = JwtUtils.parseToken(token).getSubject();
+            } catch (Exception e) {
+                // Keep default if parsing fails
+            }
+        }
+        
+        return authService.getUserInfo(username);
     }
 }

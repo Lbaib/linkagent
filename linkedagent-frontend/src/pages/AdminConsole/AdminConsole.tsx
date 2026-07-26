@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import FileUpload from '../../components/ui/FileUpload';
-import { uploadDocument, fetchDocuments, deleteDocument, DocumentStat } from '../../api/adminApi';
+import { uploadDocument, fetchDocuments, deleteDocument } from '../../api/adminApi';
+import type { DocumentStat } from '../../api/adminApi';
 import { Layers, CheckCircle, AlertCircle, Loader2, Trash2, FileText } from 'lucide-react';
 
 export default function AdminConsole() {

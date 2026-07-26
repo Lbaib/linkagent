@@ -35,7 +35,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
     if (get().ws) return;
     
     set({ wsStatus: 'connecting' });
-    const ws = new WebSocket(`ws://${window.location.host}/ws`);
+    const token = localStorage.getItem('token');
+    const wsUrl = token 
+      ? `ws://${window.location.host}/ws/chat?token=${token}`
+      : `ws://${window.location.host}/ws/chat`;
+    
+    const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
       set({ wsStatus: 'connected' });

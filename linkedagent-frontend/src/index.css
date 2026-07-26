@@ -5,8 +5,8 @@
   --color-primary: #ffffff;
   --color-on-primary: #111827;
   --color-secondary: #f3f4f6;
-  --color-accent: #7c3aed; /* Elegant Purple */
-  --color-accent-hover: #6d28d9;
+  --color-accent: #7c3bed; /* Tech Purple */
+  --color-accent-hover: #6366f1; /* Tech Indigo */
   --color-background: #f9fafb; 
   --color-foreground: #111827;
   --color-muted: #6b7280;
@@ -91,7 +91,7 @@
 }
 
 .tech-grid-bg {
-  background-color: #020617; /* slate-950 */
+  background-color: transparent;
   background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 32px 32px;
 }
