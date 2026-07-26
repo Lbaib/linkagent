@@ -1020,7 +1020,7 @@ git commit -m "feat(customer-service): issue role-aware jwt for visitors and age
 - Consumes: `StringRedisTemplate`
 - Produces（供 Task 7 编排调用）：
   - `void registerAgent(String agentId)`
-  - `void unregisterAgent(String agentId)` — 返回前清理该客服所有绑定
+  - `Set<String> unregisterAgent(String agentId)` — 清理该客服所有绑定并返回被释放的访客
   - `Optional<String> assignAgent(String visitorId)` — 成功时写 `session:state:{visitorId}=AGENT:{agentId}`、`session:bind:{visitorId}=agentId`、`agent:sessions:{agentId}` 加入 visitorId
   - `void markQueueing(String visitorId)` — 写 `session:state:{visitorId}=QUEUEING`
   - `Optional<String> getBoundAgent(String visitorId)`
