@@ -26,7 +26,8 @@ tags: [核心记忆, 记忆地图]
 | `20-episodic/` | 情景 | 会话日志、复盘 | 每次实质工作收尾 |
 | `30-procedural/` | 程序 | 工作流、操作手册 | 流程稳定后 |
 | `40-working/` | 工作 | current-focus / scratchpad / open-questions | 每会话读写 |
-| `_inbox/` | 捕获 | 未归档笔记 | 会话中随时；事后归档 |
+| `_inbox/` | 捕获 | 未归档笔记；`auto/` 为 Cursor sessionEnd 候选 | 会话中随时；结束后自动候选；事后归档 |
+
 | `_dashboards/` | 观测 | Dataview 仪表盘 | 人读；AI 一般不改 |
 | `_templates/` | 模板 | 会话日志 / ADR / 知识笔记 | 核心插件 Templates（非 Templater） |
 
@@ -34,10 +35,11 @@ tags: [核心记忆, 记忆地图]
 
 ## 默认捕获 → 归档
 
-1. 有可沉淀点 → 写 `_inbox/YYYY-MM-DD-短标题.md`（可用模板「知识笔记」）。
+1. 有可沉淀点 → 写 `_inbox/YYYY-MM-DD-短标题.md`（可用模板「知识笔记」；标明 `memory_kind`：Correction / Decision / Debug / Insight / Pattern）。
 2. 判断落点：工作焦点 → `40-working/`；稳定事实 → `10-semantic/`；情节/决策 → `20-episodic/` 或 ADR；流程 → `30-procedural/`。
 3. 移动文件，补双链；从收件箱仪表盘消失即完成。
 4. 不确定落点时**宁可留在 inbox**，不要硬塞。
+5. **Correction（用户纠正）优先捕获**，不要等收尾才想起来。
 
 ## 会话协议（摘要）
 

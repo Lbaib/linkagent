@@ -30,7 +30,7 @@ LinkAgent/
 ├── linkedagent-frontend/        # React / TypeScript / Vite，dev :5173
 ├── .agents/skills/              # 目录特定护栏与项目私有 Skills
 ├── openspec/ · docs/ · design-system/
-└── start-*.ps1 / start-*.bat
+└── ONE_CLICK_START.md           # 智能 AI 一键后台自动部署启动手册（替代传统 bat/ps1 脚本）
 ```
 
 ## 代码锚点（给 AI 跳转）

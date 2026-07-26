@@ -10,21 +10,22 @@ tags: [工作记忆, 焦点]
 
 ## 当前状态
 
-- ✅ 记忆脚手架 v1→v4 已建并入库（`d921a0f`）。
-- ✅ **首次记忆巩固已执行** → [[2026-07-26-首次记忆巩固]]；铸造管线产出 `.agents/skills/agent-entry-sync/`（需重开会话加载）。
+- ✅ 记忆脚手架 v1→v4 已建并入库。
+- ✅ 首次巩固完成；`agent-entry-sync` 已铸造。
+- ✅ Cursor Hooks：`sessionStart` / `sessionEnd`（含关键片段栏）→ [[ADR-0007-Cursor-Hooks自动注入与候选留底]]
+- ✅ 沉淀标准升级：`memory-capture` 区分 Correction / Decision / Debug / Insight / Pattern；规则增加克制版认知检查点
 - 业务代码仍有大量未提交改动，与脚手架分开看待。
 
 ## 下一步（按优先级）
 
-1. 重开会话，验证提到「更新 AGENTS / 改端口基线」时是否自动带出 `agent-entry-sync`。
-2. 将本次巩固产物（新 skill、语义笔记、复盘）`git add` 提交，避免再次未跟踪。
-3. 待决：设计 skills 稀释、根 `.gitignore`/`target/`、openspec 迁移、DocumentController 归属——见 [[open-questions]]。
-4. 日常：`/沉淀` `/收尾`；业务开发会话积累后再做第二次巩固。
+1. **验证 Hooks + 检查点**：新开会话看焦点注入；故意纠正一次 AI 后看是否写入 `_inbox/`；关会话看 `_inbox/auto/` 是否有「关键片段」栏。
+2. 待决：设计 skills 稀释、根 `.gitignore`/`target/`、openspec 迁移、DocumentController——见 [[open-questions]]。
+3. 日常：开聊即可；结束可依赖 auto 留底；实质工作仍建议 `/收尾`。
 
 ## 阻塞点
 
-- 无。
+- Hooks 依赖本机 PATH 中的 `node`；若未触发，检查 Hooks 输出通道。
 
 ## 相关
 
-[[scratchpad]] · [[open-questions]] · [[2026-07-26-首次记忆巩固]] · [[HOME]]
+[[scratchpad]] · [[open-questions]] · [[daily-usage]] · [[HOME]]

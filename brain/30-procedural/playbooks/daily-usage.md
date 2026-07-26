@@ -11,13 +11,16 @@ tags: [程序记忆, 手册, 日常]
 
 ## 你（人类）日常
 
-| 时机 | 你做什么 | AI 做什么 |
+| 时机 | 你做什么 | 系统 / AI 做什么 |
 |---|---|---|
-| 开聊 | 直接提需求即可 | 自动读 current-focus / memory-map（Cursor alwaysApply） |
+| 开聊 | 直接提需求即可 | Cursor `sessionStart` hook 自动注入 current-focus；规则仍会指向记忆地图 |
 | 中间有金句 | 说「记一下」或打 `/沉淀` | 写入 `_inbox/` |
-| 收工 | 打 `/收尾` 或说「收尾」 | 写会话日志、更新焦点 |
-| 攒了一阵 | 打 `/巩固记忆` | 提炼语义、清理 inbox |
+| 关掉会话 | 可什么都不做 | Cursor `sessionEnd` hook 在 `_inbox/auto/` 落**候选记录**（不是正式日志） |
+| 收工整理 | 打 `/收尾` 或说「收尾」 | 写正式会话日志、更新焦点；可顺手清理对应 auto 候选 |
+| 攒了一阵 | 打 `/巩固记忆` | 提炼语义、铸造 skill、清理 inbox |
 | 想浏览 | Obsidian 打开 `brain/` → [[HOME]] / [[收件箱]] | — |
+
+> Cursor Commands（`/收尾` 等）仍是**语义整理**入口。自动 hook 只保证「开场有焦点、结束有底稿」，不代替 ADR/日志质量。
 
 ## AI 工具侧
 
@@ -26,6 +29,7 @@ tags: [程序记忆, 手册, 日常]
 | 层 | 位置 | 何时生效 |
 |---|---|---|
 | 规则 | `.cursor/rules/` | 每次会话自动注入（Cursor） |
+| **Hooks** | `.cursor/hooks.json` | `sessionStart` 注入焦点；`sessionEnd` 写 `_inbox/auto/` 候选 |
 | 项目总合同 | 根 `AGENTS.md` | 所有工具、所有目录统一生效 |
 | **Skills** | `.agents/skills/` | 模型按情境自动选用，或 `/skill-name` 手动调 |
 | 命令 | `.cursor/commands/` | 你打 `/收尾` 等主动触发（薄壳，指向 skill） |

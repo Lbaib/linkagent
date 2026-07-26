@@ -20,20 +20,17 @@ tags: [程序记忆, 手册, 环境]
 | Nacos | 8848 |
 | PostgreSQL / Redis | Docker Compose 默认（见 `linkedagent-backend/docker-compose*`） |
 
-## 启动方式
+## 启动方式（AI 一键后台并发部署）
 
-- **完整冷启动**（含 Docker 中间件）：仓库根执行 `start-backend.ps1`
-  1. 启动 Docker Desktop 服务 → 重启 winnat（解决 8848 端口被 Hyper-V 保留的问题）
-  2. `docker compose up -d`（Postgres / Redis / Nacos）
-  3. 轮询等待 Nacos 8848 就绪
-  4. 逐个以 `mvn spring-boot:run -pl <服务名>` 在独立窗口拉起五个微服务（间隔 2s 削峰）
-- **中间件已在跑，只启服务+前端**：`start-services-only.ps1`
-- **全量（后端+前端）**：`start-all.ps1`
+为防止杀毒软件拦截并治愈多桌面弹窗报错，旧有的 `.bat` 及 `.ps1` 启动脚本均已整体移除，**全栈启动以根目录下的 [ONE_CLICK_START.md](../../../ONE_CLICK_START.md) 为唯一技术核心执行手册**：
+1. **统一启动指南**：无论是开发者本人还是对 Cursor / Codex / Antigravity 指挥“一键启动”，请要求 AI 重读并完整执行 `ONE_CLICK_START.md` 中说明的后台多线并行命令。
+2. **高速预构建（杜绝并发争端）**：启动前必先单笔直达 `linkedagent-backend` 根区顺行一条大通执行：`docker compose up -d; Get-Process -Name java, node -ErrorAction SilentlyContinue | Stop-Process -Force; mvn clean install -DskipTests -T 1C`。
+3. **并发出舱运行**：通过系统异步主管道以无头态（Headless Background Tasks）一次性开播 5 套后台独立的 Maven Boot 部署，以及 1 套 Vite Node 开发长驻指令。
 
-## 已知坑
+## 已知坑与解决对策
 
-- Windows 上 Nacos 8848 端口偶发被 Hyper-V 动态端口段占用，`Restart-Service winnat` 可解（脚本已内置）。
-- 微服务必须等 Nacos 就绪后再启动，否则注册失败。
+- **关于 8083 / 微服务端口占位痛点**：微信 (`Weixin.exe`) 等部分代理式通讯及加速应用，高频出现向本地随机申用占住 TCP `:8083` 并在握手结束后深埋在 `CLOSE_WAIT` 中。为**保护且不去暴力强制关闭**日常办公私人会话软件，所有后置启动命令（特别 `ai-rag-service`、网关等）全场覆盖注入 `--server.address=127.0.0.1` 神箭穿透，保证畅行启稳与 Nacos 的正路呼应注册！
+- 微服务依赖 Nacos 注册发现：中间件体系启动（`docker compose`）须作为首席打起任务先行确认立住。
 
 ## 相关
 

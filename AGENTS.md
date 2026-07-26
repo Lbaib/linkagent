@@ -74,6 +74,8 @@
 
 Cursor 命令：`/回顾进度`、`/沉淀`、`/收尾`、`/巩固记忆`。
 
+Cursor Hooks（仅 IDE Composer）：`sessionStart` 自动注入 `current-focus`；`sessionEnd` 写入 `brain/_inbox/auto/` 候选记录。
+
 Obsidian：将 `brain/` 作为 Vault，从 `brain/HOME.md` 开始。
 
 ## 6. 常用验证

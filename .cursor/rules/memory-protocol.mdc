@@ -19,7 +19,19 @@ alwaysApply: true
 - 项目级约束、技术基线、目录导向与角色分工以根 `AGENTS.md` 为准；结构不清 → `brain/00-core/project-map.md`。
 - 项目私有 skills 在 `.agents/skills/`（沉淀 / ADR / 收尾 / 铸造 skill / WS 契约 / RAG 护栏），按情境自动选用。
 - 可沉淀结论 → `brain/_inbox/`（`/沉淀`）；收尾 → `/收尾`；巩固 → `/巩固记忆`。
+- Cursor Hooks：`sessionStart` 自动注入焦点；`sessionEnd` 在 `brain/_inbox/auto/` 写候选记录（见 ADR-0007）。
 - 功能规格变更 → `openspec/` + `.agent/workflows/opsx-*`。
+
+## 认知检查点（克制版）
+
+完成本次用户请求后，**默默自检**（不要每轮都向用户播报）：
+
+1. 用户是否纠正/否决了我的做法？
+2. 是否出现非显而易见的调试结论？
+3. 是否做出可复用的技术决策（含「为何不选 B」）？
+
+若任一条为是 → 调用 `memory-capture` 写入 `brain/_inbox/`，或提醒用户 `/沉淀`。  
+若皆否 → **什么都不说**，直接结束。勿把检查点变成每条回复的口头禅。
 
 ## 禁止
 
