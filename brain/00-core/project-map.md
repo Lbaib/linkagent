@@ -42,6 +42,7 @@ LinkAgent/
 | 认证 / SysUser | `linkedagent-backend/customer-service/src/main/java/com/linkedagent/customerservice/`（`controller/AuthController.java` · `service/AuthService.java` · `config/SecurityConfig.java`） |
 | 前端聊天状态 | `linkedagent-frontend/src/store/chatStore.ts` |
 | 登录 / 落地页 | `linkedagent-frontend/src/components/LoginPage.tsx` · `src/pages/LandingPage.tsx` |
+| 知识库文档上传 | `linkedagent-backend/ai-rag-service/src/main/java/com/linkedagent/airagservice/controller/AiController.java`（`POST /api/ai/doc/upload`；旧 `DocumentController` 已删除） |
 | 技术规格书 | `LinkedAgent_Technical_Spec.md` |
 | 现行规格 | `openspec/specs/` |
 
