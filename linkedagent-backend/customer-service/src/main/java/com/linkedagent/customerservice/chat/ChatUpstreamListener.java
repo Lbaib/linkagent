@@ -27,7 +27,11 @@ public class ChatUpstreamListener {
             if (connectionId == null || frame == null) {
                 return;
             }
-            String role = envelope.path("role").asText(JwtRoles.VISITOR);
+            String role = envelope.path("role").asText(null);
+            if (!JwtRoles.VISITOR.equals(role) && !JwtRoles.AGENT.equals(role)) {
+                log.warn("Ignoring upstream envelope with unrecognized role: {}", role);
+                return;
+            }
             orchestrationService.handleUpstream(connectionId, role, frame);
         } catch (Exception e) {
             log.warn("Failed to process upstream envelope: {}", e.getMessage());

@@ -212,6 +212,8 @@ class ChatOrchestrationServiceTest {
 
     @Test
     void agentChatIsForwardedToVisitor() {
+        when(routingService.getBoundAgent("visitor_abc")).thenReturn(Optional.of("agent_1"));
+
         service.handleUpstream("agent_1", JwtRoles.AGENT,
                 "{\"type\":\"CHAT\",\"payload\":{\"text\":\"您好\",\"visitorId\":\"visitor_abc\"}}");
 
@@ -219,6 +221,20 @@ class ChatOrchestrationServiceTest {
         assertEquals(WsFrames.CHAT, frame.get("type").asText());
         assertEquals("agent", frame.get("payload").get("sender").asText());
         assertEquals("您好", frame.get("payload").get("text").asText());
+    }
+
+    @Test
+    void agentChatIsIgnoredWhenVisitorIsNotBoundToAgent() {
+        when(routingService.getBoundAgent("visitor_other")).thenReturn(Optional.of("agent_2"));
+        when(routingService.getBoundAgent("visitor_unbound")).thenReturn(Optional.empty());
+
+        service.handleUpstream("agent_1", JwtRoles.AGENT,
+                "{\"type\":\"CHAT\",\"payload\":{\"text\":\"您好\",\"visitorId\":\"visitor_other\"}}");
+        service.handleUpstream("agent_1", JwtRoles.AGENT,
+                "{\"type\":\"CHAT\",\"payload\":{\"text\":\"您好\",\"visitorId\":\"visitor_unbound\"}}");
+
+        verify(publisher, never()).send(anyString(), anyString());
+        verify(listOps, never()).rightPush(anyString(), anyString());
     }
 
     @Test

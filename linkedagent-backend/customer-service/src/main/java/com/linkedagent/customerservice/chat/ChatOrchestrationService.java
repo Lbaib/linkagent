@@ -101,6 +101,11 @@ public class ChatOrchestrationService {
             log.warn("Agent {} sent a chat frame without text or visitorId", agentId);
             return;
         }
+        Optional<String> boundAgent = routingService.getBoundAgent(visitorId);
+        if (boundAgent.isEmpty() || !agentId.equals(boundAgent.get())) {
+            log.warn("Ignoring chat from agent {} for visitor {} without matching binding", agentId, visitorId);
+            return;
+        }
         bufferForPersistence(visitorId, text);
         publisher.send(visitorId, chatFrame("agent", text, visitorId));
     }
