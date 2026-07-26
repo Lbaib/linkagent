@@ -67,10 +67,12 @@ LinkedAgent 后端 MVP 骨架与前端 `chatStore` 帧约定已分别存在，�
 
 | type | 发送方 | payload | 语义 |
 |---|---|---|---|
-| `CHAT` | 访客 / 客服 | `{ text }` | 当前会话态下发消息 |
+| `CHAT` | 访客 / 客服 | 访客 `{ text }`；客服 `{ text, visitorId }` | 当前会话态下发消息 |
 | `TRANSFER_AGENT` | 访客 | （可空） | 请求转人工 |
 | `AGENT_READY` | 客服 | （可空） | 客服上线，写入可分配集合 |
 | `AGENT_ACCEPT` | 客服 | `{ visitorId }` | 可选；本轮优先服务端自动分配 |
+
+> 内部帧：`chat-server` 在连接关闭时向 `customer-service` 上行发送 `DISCONNECT`，浏览器不会收到该帧。
 
 ### 4.3 服务端 → 客户端
 
