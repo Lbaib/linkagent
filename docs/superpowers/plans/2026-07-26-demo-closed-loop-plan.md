@@ -1024,7 +1024,6 @@ git commit -m "feat(customer-service): issue role-aware jwt for visitors and age
   - `Optional<String> assignAgent(String visitorId)` — 成功时写 `session:state:{visitorId}=AGENT:{agentId}`、`session:bind:{visitorId}=agentId`、`agent:sessions:{agentId}` 加入 visitorId
   - `void markQueueing(String visitorId)` — 写 `session:state:{visitorId}=QUEUEING`
   - `Optional<String> getBoundAgent(String visitorId)`
-  - `Set<String> getVisitorsOfAgent(String agentId)`
   - `void releaseVisitor(String visitorId)` — 解绑并把状态回退为 `QUEUEING`
   - 常量 `MAX_CONCURRENT_SESSIONS = 5`
 
@@ -1227,11 +1226,6 @@ public class RoutingService {
 
     public Optional<String> getBoundAgent(String visitorId) {
         return Optional.ofNullable(redisTemplate.opsForValue().get(BIND_PREFIX + visitorId));
-    }
-
-    public Set<String> getVisitorsOfAgent(String agentId) {
-        Set<String> visitors = redisTemplate.opsForSet().members(AGENT_SESSIONS_PREFIX + agentId);
-        return visitors == null ? Collections.emptySet() : visitors;
     }
 
     /** Unbinds a visitor from its agent and puts the session back into the queue. */
@@ -1557,7 +1551,7 @@ import java.util.Set;
 public class ChatOrchestrationService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatOrchestrationService.class);
-    private static final int STREAM_CHUNK_SIZE = 12;
+    private static final int STREAM_CHUNK_SIZE = 6;
     private static final String MESSAGE_BUFFER_KEY = "chat:messages";
     private static final String NO_AGENT_HINT = "当前暂无客服在线，您可以继续与 AI 对话，我们会在客服上线后为您接入。";
 
