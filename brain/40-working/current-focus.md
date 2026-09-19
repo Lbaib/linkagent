@@ -1,6 +1,6 @@
 ---
 type: working
-updated: 2026-07-26
+updated: 2026-07-27
 tags: [工作记忆, 焦点]
 ---
 
@@ -10,24 +10,21 @@ tags: [工作记忆, 焦点]
 
 ## 当前状态
 
-- ✅ 记忆脚手架 v1→v4 已建并入库。
-- ✅ 首次巩固完成；`agent-entry-sync` 已铸造。
-- ✅ Cursor Hooks：`sessionStart` / `sessionEnd`（含关键片段栏）→ [[ADR-0007-Cursor-Hooks自动注入与候选留底]]
-- ✅ 沉淀标准升级：`memory-capture` 区分 Correction / Decision / Debug / Insight / Pattern；规则增加克制版认知检查点
-- 业务代码仍有大量未提交改动，与脚手架分开看待。
-- ✅ 演示闭环：访客匿名 AI 流式 → 转人工 → 单客服真实接管；WS 帧契约前后端对齐；模型密钥迁出源码。
-- ⏳ 双浏览器端到端演示（Task 11 Steps 2–3）仍待人工验证，尚未宣称 e2e 通过。
+- ✅ `feat/demo-closed-loop`：访客匿名 AI 流式 → 转人工 → 单客服接管；终审两项 Important 已修（JWT 外置、转人工幂等）。
+- ✅ 二次巩固与本会话收尾完成；[[ADR-0008-JWT签名密钥外置fail-closed]] · [[demo-closed-loop-invariants]] 已入库。
+- ⏳ 双浏览器 e2e 未跑，**不得宣称演示通过**。
 
 ## 下一步（按优先级）
 
-1. **演示闭环的下一层**：离线留言落库、满载排队与队列位次、token 级 LLM 流式，三选一立项。
-2. 待决：设计 skills 稀释、根 `.gitignore`/`target/`、openspec 迁移、DocumentController——见 [[open-questions]]。
-3. 日常：开聊即可；结束可依赖 auto 留底；实质工作仍建议 `/收尾`。
+1. **人工 e2e**：各后端设同一 `LINKEDAGENT_JWT_SECRET`（≥32）+ `OPENAI_API_KEY`，按 `ONE_CLICK_START.md` 启服务；双浏览器验证提问流式、转人工、客服接管、断线重排队、无密钥时报错不编造。
+2. **e2e 通过后**：离线留言落库 / 满载排队位次 / token 级 LLM 流式，三选一立项。
+3. 待决仍挂 [[open-questions]]（openspec 单数路径、设计 skills 稀释）——无新证据前不动。
 
 ## 阻塞点
 
-- Hooks 依赖本机 PATH 中的 `node`；若未触发，检查 Hooks 输出通道。
+- e2e 依赖本机 PostgreSQL / Redis / Nacos 与上述环境变量。
+- Hooks 依赖 PATH 中的 `node`。
 
 ## 相关
 
-[[scratchpad]] · [[open-questions]] · [[daily-usage]] · [[HOME]]
+[[scratchpad]] · [[open-questions]] · [[2026-07-27-演示闭环收口与二次巩固]] · [[2026-07-27-二次记忆巩固]] · [[HOME]]

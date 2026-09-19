@@ -40,9 +40,12 @@ LinkAgent/
 | WS JWT 握手 | `linkedagent-backend/chat-server/src/main/java/com/linkedagent/chatserver/websocket/JwtWebSocketInterceptor.java` |
 | 公共 JWT 工具 | `linkedagent-backend/common-core/src/main/java/com/linkedagent/common/util/JwtUtils.java` |
 | 认证 / SysUser | `linkedagent-backend/customer-service/src/main/java/com/linkedagent/customerservice/`（`controller/AuthController.java` · `service/AuthService.java` · `config/SecurityConfig.java`） |
-| 前端聊天状态 | `linkedagent-frontend/src/store/chatStore.ts` |
+| 前端访客聊天 | `linkedagent-frontend/src/store/chatStore.ts` |
+| 前端客服工作台 | `linkedagent-frontend/src/store/agentStore.ts` · `src/components/AgentWorkbench.tsx` |
+| 会话编排 / 转人工 | `linkedagent-backend/customer-service/.../chat/ChatOrchestrationService.java` · `service/RoutingService.java` |
 | 登录 / 落地页 | `linkedagent-frontend/src/components/LoginPage.tsx` · `src/pages/LandingPage.tsx` |
 | 知识库文档上传 | `linkedagent-backend/ai-rag-service/src/main/java/com/linkedagent/airagservice/controller/AiController.java`（`POST /api/ai/doc/upload`；旧 `DocumentController` 已删除） |
+| 演示闭环不变量 | `brain/10-semantic/architecture/demo-closed-loop-invariants.md` |
 | 技术规格书 | `LinkedAgent_Technical_Spec.md` |
 | 现行规格 | `openspec/specs/` |
 

@@ -1,7 +1,7 @@
 ---
 type: moc
 created: 2026-07-25
-updated: 2026-07-25
+updated: 2026-07-27
 tags: [导航]
 ---
 
@@ -18,18 +18,18 @@ tags: [导航]
 
 ## 📚 语义
 
-- [[system-overview]] · [[agent-entry-layering]] · [[客服业务域]]
-- ADR：[[ADR-0001-长短连接物理隔离]] · [[ADR-0002-pgvector承载向量检索]] · [[ADR-0003-Git内嵌Obsidian记忆库]] · [[ADR-0004-入口去重与inbox两段式]] · [[ADR-0005-项目私有skills与铸造管线]] · [[ADR-0006-唯一根AGENTS项目总合同]] · [[ADR-0007-Cursor-Hooks自动注入与候选留底]]
+- [[system-overview]] · [[agent-entry-layering]] · [[demo-closed-loop-invariants]] · [[客服业务域]]
+- ADR：[[ADR-0001-长短连接物理隔离]] · [[ADR-0002-pgvector承载向量检索]] · [[ADR-0003-Git内嵌Obsidian记忆库]] · [[ADR-0004-入口去重与inbox两段式]] · [[ADR-0005-项目私有skills与铸造管线]] · [[ADR-0006-唯一根AGENTS项目总合同]] · [[ADR-0007-Cursor-Hooks自动注入与候选留底]] · [[ADR-0008-JWT签名密钥外置fail-closed]]
 
 ## 📖 情景
 
-- 会话：[[2026-07-26-Cursor-Hooks自动注入与候选留底]] · [[2026-07-26-脚手架入库与Obsidian校正]] · [[2026-07-26-统一根AGENTS项目总合同]] · [[2026-07-25-补齐项目私有skills]] · [[2026-07-25-脚手架v2加固]] · [[2026-07-25-记忆脚手架初始化]]
-- 复盘：[[2026-07-26-首次记忆巩固]]
+- 会话：[[2026-07-27-演示闭环收口与二次巩固]] · [[2026-07-26-演示闭环实现]] · [[2026-07-26-Cursor-Hooks自动注入与候选留底]] · [[2026-07-26-脚手架入库与Obsidian校正]] · [[2026-07-26-统一根AGENTS项目总合同]] · [[2026-07-25-补齐项目私有skills]] · [[2026-07-25-脚手架v2加固]] · [[2026-07-25-记忆脚手架初始化]]
+- 复盘：[[2026-07-27-二次记忆巩固]] · [[2026-07-26-首次记忆巩固]]
 
 ## ⚙️ 程序
 
 - [[session-start]] · [[session-end]] · [[memory-consolidation]]
-- [[skills-index]]（项目私有 skills；含巩固铸造的 `agent-entry-sync`）
+- [[skills-index]]（项目私有 skills；`ws-contract-check` 已按演示闭环加厚）
 - [[daily-usage]] · [[obsidian-vault]] · [[dev-environment]] · [[spec-driven-flow]]
 
 ## 🗂️ 模板

@@ -1,20 +1,5 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
-
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  design:
+    - "必须包含 ## API Contract 章节，接口分为两大组：(1) ### 本次涉及的已有接口 — 代码库中已存在的相关端点，下分两个子表：#### 本次无需修改（含来源文件，Agent 严禁重复生成或修改）和 #### 本次需要修改（含来源文件和变更说明，描述具体改什么，详细契约中用 ✅ 标记变更项）；(2) ### 需要新增的接口 — 本次新增的端点清单（# / Method / Path / 描述），用于统计新增数量，每个接口展开详细契约（认证方式、请求参数表、成功响应示例、错误响应表）。Agent 编码时：跳过无需修改的接口，按变更说明修改需修改的接口，全量实现新增接口。"

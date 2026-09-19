@@ -33,6 +33,7 @@ docker compose up -d; Get-Process -Name java, node -ErrorAction SilentlyContinue
 均通过原装驱动承载特使传参规绝一切网络干扰：
 
 > **JWT：** 每个后端服务进程启动前须设置同一环境变量 `LINKEDAGENT_JWT_SECRET=<set-a-shared-secret-min-32-chars>`（≥32 字符，各服务取值必须一致）。
+> **Nacos IP：** 与 `--server.address=127.0.0.1` 配套，各服务 `application.yml` 已固定 `spring.cloud.nacos.discovery.ip=127.0.0.1`。若仍注册成局域网/WSL IP（如 `172.x`），网关会出现 `Connection refused`，前端 `/api` 全 500。
 1. **网关指路者 (api-gateway :8080)**
    ```cmd
    cmd.exe /c "mvn spring-boot:run -pl api-gateway -Dspring-boot.run.arguments=--server.address=127.0.0.1"
