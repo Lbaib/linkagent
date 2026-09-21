@@ -7,6 +7,7 @@ import com.linkedagent.airagservice.service.AiRagService;
 import com.linkedagent.airagservice.service.DocumentParserService;
 import com.linkedagent.airagservice.service.EmbeddingService;
 import com.linkedagent.airagservice.dto.DocumentStat;
+import com.linkedagent.airagservice.dto.DocumentChunkDto;
 import com.pgvector.PGvector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -118,6 +119,17 @@ public class AiController {
     @GetMapping("/doc/list")
     public ResponseEntity<List<DocumentStat>> listDocuments() {
         return ResponseEntity.ok(documentChunkRepository.getDocumentStats());
+    }
+
+    @GetMapping("/doc/chunks")
+    public ResponseEntity<List<DocumentChunkDto>> getDocumentChunks(@RequestParam("name") String documentName) {
+        List<DocumentChunk> chunks = documentChunkRepository.findByDocumentNameOrderByIdAsc(documentName);
+        List<DocumentChunkDto> dtos = new ArrayList<>();
+        for (int i = 0; i < chunks.size(); i++) {
+            DocumentChunk chunk = chunks.get(i);
+            dtos.add(new DocumentChunkDto(chunk.getId(), chunk.getDocumentName(), chunk.getContent(), i));
+        }
+        return ResponseEntity.ok(dtos);
     }
 
     @DeleteMapping("/doc")

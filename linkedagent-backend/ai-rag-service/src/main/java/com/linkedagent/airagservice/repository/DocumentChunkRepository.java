@@ -24,4 +24,6 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
     @Modifying
     @Query("DELETE FROM DocumentChunk d WHERE d.documentName = :documentName")
     void deleteByDocumentName(@Param("documentName") String documentName);
+
+    List<DocumentChunk> findByDocumentNameOrderByIdAsc(String documentName);
 }
