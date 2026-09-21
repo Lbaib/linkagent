@@ -14,18 +14,17 @@
 
     <modules>
         <module>common-core</module>
-        <module>api-gateway</module>
         <module>chat-server</module>
         <module>customer-service</module>
         <module>ai-rag-service</module>
         <module>system-management</module>
+        <module>linkedagent-server</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
         <spring-boot.version>3.2.4</spring-boot.version>
         <spring-cloud.version>2023.0.1</spring-cloud.version>
-        <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -45,15 +44,6 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
                 <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            
-            <!-- Spring Cloud Alibaba Dependencies -->
-            <dependency>
-                <groupId>com.alibaba.cloud</groupId>
-                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-                <version>${spring-cloud-alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

@@ -13,16 +13,16 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 public class RedisPubSubConfig {
 
     @Bean
-    public RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory,
-                                                   MessageListenerAdapter listenerAdapter) {
+    public RedisMessageListenerContainer chatDownstreamContainer(RedisConnectionFactory connectionFactory,
+                                                                 MessageListenerAdapter chatDownstreamListenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, new ChannelTopic(ChatChannels.DOWNSTREAM));
+        container.addMessageListener(chatDownstreamListenerAdapter, new ChannelTopic(ChatChannels.DOWNSTREAM));
         return container;
     }
 
     @Bean
-    public MessageListenerAdapter listenerAdapter(ChatWebSocketHandler handler) {
+    public MessageListenerAdapter chatDownstreamListenerAdapter(ChatWebSocketHandler handler) {
         return new MessageListenerAdapter(handler, "handleRedisMessage");
     }
 }
