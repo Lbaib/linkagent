@@ -1,0 +1,47 @@
+sprint: 1
+feature: "FEAT-KNOWLEDGE-BASE-UI-knowledge-base-management"
+ratified: "2026-09-21"
+package_prefix: "."
+
+modules:
+  in_scope:
+    - id: "ai-rag-service"
+      path: "linkedagent-backend/ai-rag-service"
+      role: core
+      note: "实现切片查询端点 GET /api/ai/doc/chunks 与对应单元测试"
+    - id: "frontend-knowledge-ui"
+      path: "linkedagent-frontend/src"
+      role: ui
+      note: "实现 knowledgeService 客户端、KnowledgeBaseManager 组件与 AdminConsole 接入"
+
+  out_of_scope:
+    - id: "chat-server"
+      path: "linkedagent-backend/chat-server"
+      reason: "非本次知识库管理修改范围，保留现有 WebSocket 功能不变"
+      decision: freeze
+    - id: "customer-service"
+      path: "linkedagent-backend/customer-service"
+      reason: "非本次知识库管理修改范围，保留现有客服与路由功能不变"
+      decision: freeze
+    - id: "system-management"
+      path: "linkedagent-backend/system-management"
+      reason: "非本次知识库管理修改范围"
+      decision: freeze
+    - id: "api-gateway"
+      path: "linkedagent-backend/api-gateway"
+      reason: "已有 /api/ai/** 路由已生效，无需修改网关代码"
+      decision: freeze
+
+dependency_rules:
+  in_scope_to_in_scope:
+    allow: true
+  in_scope_to_out_of_scope:
+    allow: false
+    exceptions: []
+
+known_violations: []
+
+metadata:
+  discovery_mode: false
+  enforce_in_l2: false
+  report_path: ".harness/sprints/FEAT-KNOWLEDGE-BASE-UI-knowledge-base-management/sprint-1-boundary-report.md"
