@@ -40,6 +40,21 @@ export async function fetchDocuments(): Promise<DocumentStat[]> {
   return response.json();
 }
 
+export interface DocumentChunkDto {
+  id: number;
+  documentName: string;
+  content: string;
+  chunkIndex: number;
+}
+
+export async function fetchDocumentChunks(name: string): Promise<DocumentChunkDto[]> {
+  const response = await fetch(`/api/ai/doc/chunks?name=${encodeURIComponent(name)}`);
+  if (!response.ok) {
+    await handleApiError(response, 'Fetch chunks failed');
+  }
+  return response.json();
+}
+
 export async function deleteDocument(name: string): Promise<any> {
   const response = await fetch(`/api/ai/doc?name=${encodeURIComponent(name)}`, {
     method: 'DELETE',
@@ -49,3 +64,4 @@ export async function deleteDocument(name: string): Promise<any> {
   }
   return response.json();
 }
+

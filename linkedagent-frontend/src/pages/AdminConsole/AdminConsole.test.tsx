@@ -47,7 +47,41 @@ describe('AdminConsole', () => {
     
     await waitFor(() => {
       expect(screen.getByText('test-doc.pdf')).toBeInTheDocument();
-      expect(screen.getByText(/15 chunks/i)).toBeInTheDocument();
+      expect(screen.getByText(/15 个切片/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should fetch and display chunk preview modal when preview clicked', async () => {
+    vi.spyOn(adminApi, 'fetchDocuments').mockResolvedValue([
+      { documentName: 'test-doc.pdf', chunkCount: 2 }
+    ]);
+    const mockFetchChunks = vi.spyOn(adminApi, 'fetchDocumentChunks').mockResolvedValue([
+      { id: 1, documentName: 'test-doc.pdf', content: 'First chunk preview', chunkIndex: 0 },
+      { id: 2, documentName: 'test-doc.pdf', content: 'Second chunk preview', chunkIndex: 1 }
+    ]);
+
+    render(<AdminConsole />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test-doc.pdf')).toBeInTheDocument();
+    });
+
+    const previewButton = screen.getByLabelText(/Preview chunks for test-doc\.pdf/i);
+    fireEvent.click(previewButton);
+
+    expect(mockFetchChunks).toHaveBeenCalledWith('test-doc.pdf');
+
+    await waitFor(() => {
+      expect(screen.getByText('First chunk preview')).toBeInTheDocument();
+      expect(screen.getByText('Second chunk preview')).toBeInTheDocument();
+    });
+
+    // Close modal
+    const closeButton = screen.getByLabelText(/Close modal/i);
+    fireEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText('First chunk preview')).not.toBeInTheDocument();
     });
   });
 });
